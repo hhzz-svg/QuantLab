@@ -1,0 +1,89 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>回测配置 - QuantLab</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <nav class="nav">
+    <a class="logo" href="index.html">QuantLab</a>
+    <div class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="backtest.html">回测配置</a>
+      <a href="result.html">回测结果</a>
+      <a href="strategies.html">策略说明</a>
+    </div>
+  </nav>
+  <main class="container">
+    <section class="card">
+      <h2>回测配置</h2>
+      <form id="backtestForm">
+        <div class="form-grid">
+          <label>标的代码
+            <input name="symbol" value="SAMPLE" placeholder="AAPL / 510300 / SAMPLE" />
+          </label>
+          <label>开始时间
+            <input name="start" type="date" value="2024-01-01" />
+          </label>
+          <label>结束时间
+            <input name="end" type="date" value="2024-03-31" />
+          </label>
+          <label>初始资金
+            <input name="cash" type="number" value="100000" min="1" />
+          </label>
+          <label>手续费
+            <input name="fee" type="number" value="0.001" min="0" step="0.0001" />
+          </label>
+          <label>策略类型
+            <select name="strategy" id="strategy">
+              <option value="ma_cross">双均线策略</option>
+              <option value="dca">定投策略</option>
+              <option value="rsi">RSI 策略</option>
+            </select>
+          </label>
+          <label class="ma-field">短均线
+            <input name="short_window" type="number" value="5" min="1" />
+          </label>
+          <label class="ma-field">长均线
+            <input name="long_window" type="number" value="20" min="2" />
+          </label>
+          <label class="dca-field">定投间隔交易日
+            <input name="interval_days" type="number" value="20" min="1" />
+          </label>
+          <label class="dca-field">每次定投金额
+            <input name="dca_amount" type="number" value="1000" min="1" />
+          </label>
+          <label class="rsi-field">RSI 周期
+            <input name="rsi_period" type="number" value="14" min="2" />
+          </label>
+          <label class="rsi-field">超卖阈值
+            <input name="oversold" type="number" value="30" min="1" max="99" />
+          </label>
+          <label class="rsi-field">超买阈值
+            <input name="overbought" type="number" value="70" min="1" max="99" />
+          </label>
+        </div>
+        <div class="actions">
+          <button class="button" type="submit">运行回测</button>
+          <a class="button secondary" href="strategies.html">查看策略说明</a>
+        </div>
+        <div id="status" class="status"></div>
+      </form>
+    </section>
+    <section class="card" style="margin-top: 18px;">
+      <h2>上传本地 CSV</h2>
+      <p class="note">CSV 字段需要包含 date, open, high, low, close, volume。上传后用同名标的代码运行回测。</p>
+      <form id="uploadForm" class="actions">
+        <input name="symbol" value="MYDATA" style="max-width: 180px" />
+        <input name="file" type="file" accept=".csv" />
+        <button class="button secondary" type="submit">上传 CSV</button>
+      </form>
+      <div id="uploadStatus" class="status"></div>
+    </section>
+  </main>
+  <script src="js/api.js"></script>
+  <script src="js/backtest.js"></script>
+</body>
+</html>

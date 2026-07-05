@@ -1,0 +1,38 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>回测结果 - QuantLab</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+</head>
+<body>
+  <nav class="nav">
+    <a class="logo" href="index.html">QuantLab</a>
+    <div class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="backtest.html">回测配置</a>
+      <a href="result.html">回测结果</a>
+      <a href="strategies.html">策略说明</a>
+    </div>
+  </nav>
+  <main class="container">
+    <section id="empty" class="card" style="display:none;">
+      <h2>还没有回测结果</h2>
+      <p class="note">请先在回测配置页运行一次回测。</p>
+      <a class="button" href="backtest.html">去配置回测</a>
+    </section>
+    <section id="content" style="display:none;">
+      <div id="summary" class="metrics"></div>
+      <section class="card"><h2>价格走势 + 买卖点</h2><div id="priceChart" class="chart"></div></section>
+      <section class="card" style="margin-top:18px;"><h2>策略收益曲线 / 买入持有对比</h2><div id="equityChart" class="chart"></div></section>
+      <section class="card" style="margin-top:18px;"><h2>回撤曲线</h2><div id="drawdownChart" class="chart"></div></section>
+      <section class="card" style="margin-top:18px;"><h2>交易记录</h2><div id="trades"></div></section>
+      <section class="card" style="margin-top:18px;"><h2>报告文件</h2><p id="report" class="note"></p></section>
+    </section>
+  </main>
+  <script src="js/api.js"></script>
+  <script src="js/result.js"></script>
+</body>
+</html>
