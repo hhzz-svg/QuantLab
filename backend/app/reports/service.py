@@ -13,7 +13,7 @@ def build_markdown_report(run: dict, metrics: dict, trades: list[dict]) -> str:
     return f"""# 策略回测报告
 
 ## 研究目的
-本报告用于评估 `{run['strategy_id']}` 策略在 `{run['symbol']}` 的历史区间表现，辅助完成量化投研、系统测试与毕业论文结果分析。
+本报告用于评估 `{run['strategy_id']}` 策略在 `{run['symbol']}` 的历史区间表现，辅助完成量化投研、系统测试与研究结果分析。
 
 ## 数据说明
 - 标的：{run['symbol']}
@@ -61,3 +61,4 @@ def save_reports(run_id: str, run: dict, metrics: dict, trades: list[dict]) -> t
 
 def read_report(path: str) -> str:
     return (PROJECT_ROOT / path).read_text(encoding="utf-8")
+

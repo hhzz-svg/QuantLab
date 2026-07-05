@@ -2,11 +2,7 @@ import { createApp, nextTick } from 'vue/dist/vue.esm-bundler.js'
 import * as echarts from 'echarts'
 import './style.css'
 
-const api = async (url, options = {}) => {
-  const response = await fetch(url, options)
-  if (!response.ok) throw new Error(await response.text())
-  return response.json()
-}
+let api
 const pct = (v) => `${((Number(v) || 0) * 100).toFixed(2)}%`
 const signedPct = (v) => `${Number(v || 0) >= 0 ? '+' : ''}${((Number(v) || 0) * 100).toFixed(2)}%`
 const money = (v) => Number(v || 0).toLocaleString('zh-CN', { maximumFractionDigits: 2 })
@@ -40,6 +36,94 @@ const OPTIMIZATION_GRID_TEMPLATES = {
   "lookback": [10, 20, 60],
   "threshold": [0, 0.01, 0.03]
 }`
+}
+
+const DEMO_STRATEGIES = [
+  { id: 'ma_cross', name: '双均线策略', description: '短均线上穿长均线买入，下穿卖出。', scenario: '趋势跟踪入门策略。', risk_note: '震荡行情容易频繁假突破。', parameters: [{ name: 'short_window', label: '短均线', default: 5, step: 1 }, { name: 'long_window', label: '长均线', default: 20, step: 1 }] },
+  { id: 'rsi', name: 'RSI 策略', description: 'RSI 低位买入，高位卖出。', scenario: '均值回归和超买超卖观察。', risk_note: '单边下跌时可能过早抄底。', parameters: [{ name: 'period', label: 'RSI 周期', default: 14, step: 1 }, { name: 'oversold', label: '超卖阈值', default: 30, step: 1 }, { name: 'overbought', label: '超买阈值', default: 70, step: 1 }] },
+  { id: 'macd', name: 'MACD 策略', description: 'DIF 上穿 DEA 持有，下穿离场。', scenario: '趋势确认和动量变化展示。', risk_note: '滞后性较强，反转初期反应慢。', parameters: [{ name: 'fast_period', label: '快线周期', default: 12, step: 1 }, { name: 'slow_period', label: '慢线周期', default: 26, step: 1 }, { name: 'signal_period', label: '信号周期', default: 9, step: 1 }] },
+  { id: 'bollinger', name: '布林带策略', description: '跌破下轨买入，突破上轨卖出。', scenario: '价格偏离均值后的回归观察。', risk_note: '趋势行情可能持续贴边运行。', parameters: [{ name: 'window', label: '窗口', default: 20, step: 1 }, { name: 'num_std', label: '标准差倍数', default: 2, step: 0.1 }] },
+  { id: 'dca', name: '定投策略', description: '每隔固定交易日投入固定金额。', scenario: '长期投入和择时策略对照。', risk_note: '资金使用慢，强趋势中可能跑输满仓。', parameters: [{ name: 'interval_days', label: '间隔交易日', default: 20, step: 1 }, { name: 'amount', label: '每次金额', default: 1000, step: 100 }] },
+  { id: 'momentum', name: '动量策略', description: '过去一段涨幅超过阈值则持有。', scenario: '趋势延续假设和轮动思想。', risk_note: '拐点附近容易追涨杀跌。', parameters: [{ name: 'lookback', label: '回看周期', default: 20, step: 1 }, { name: 'threshold', label: '动量阈值', default: 0, step: 0.01 }] }
+]
+const demoState = { marketItems: [], backtests: [], optimizations: [] }
+const parseBody = (options) => JSON.parse(options?.body || '{}')
+const demoChart = (symbol = 'AAPL') => {
+  const start = new Date()
+  start.setDate(start.getDate() - 119)
+  const seed = [...symbol].reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % 23
+  return Array.from({ length: 120 }, (_, index) => {
+    const d = new Date(start)
+    d.setDate(start.getDate() + index)
+    const close = 92 + seed + index * 0.42 + Math.sin(index / 6) * 4 + Math.cos(index / 13) * 2
+    return { date: d.toISOString().slice(0, 10), close: Number(close.toFixed(2)), volume: 1200000 + index * 4200 }
+  })
+}
+const demoPreview = (symbol = 'AAPL', assetType = 'stock') => {
+  const chart = demoChart(symbol)
+  const last = chart.at(-1)
+  const previous = chart.at(-2) || last
+  const closes = chart.map((x) => x.close)
+  const item = { symbol: symbol.toUpperCase(), asset_type: assetType, source: 'demo', rows: chart.length, start: chart[0].date, end: last.date }
+  demoState.marketItems = [item, ...demoState.marketItems.filter((x) => x.symbol !== item.symbol)]
+  return { ...item, quote: { last_date: last.date, last_close: last.close, previous_close: previous.close, change: last.close - previous.close, change_pct: previous.close ? last.close / previous.close - 1 : 0, period_high: Math.max(...closes), period_low: Math.min(...closes), volume: last.volume, avg_volume: chart.slice(-20).reduce((sum, x) => sum + x.volume, 0) / 20 }, chart }
+}
+const demoBacktest = (payload = {}) => {
+  const symbol = (payload.symbol || 'AAPL').toUpperCase()
+  const preview = demoPreview(symbol, payload.asset_type || 'stock')
+  const price = preview.chart.map((x, index) => ({ date: x.date, close: x.close, signal: index % 37 === 4 ? 1 : index % 53 === 12 ? -1 : 0 }))
+  const equity = price.map((x, index) => ({ date: x.date, equity: Number((Number(payload.cash || 100000) * (1 + index * 0.0017 + Math.sin(index / 14) * 0.018)).toFixed(2)) }))
+  const benchmark = price.map((x, index) => ({ date: x.date, equity: Number((Number(payload.cash || 100000) * (1 + index * 0.0012 + Math.sin(index / 18) * 0.014)).toFixed(2)) }))
+  const drawdown = equity.map((x, index) => { const high = Math.max(...equity.slice(0, index + 1).map((p) => p.equity)); return { date: x.date, drawdown: x.equity / high - 1 } })
+  const totalReturn = equity.at(-1).equity / Number(payload.cash || 100000) - 1
+  const monthly_returns = [{ month: '最近 1 月', return: 0.028 }, { month: '最近 2 月', return: -0.011 }, { month: '最近 3 月', return: 0.036 }]
+  const run = { id: `demo-${Date.now()}-${Math.floor(Math.random() * 1000)}`, created_at: new Date().toISOString(), symbol, asset_type: payload.asset_type || 'stock', data_source: 'demo', start: preview.start, end: preview.end, cash: Number(payload.cash || 100000), fee: Number(payload.fee || 0.001), slippage: Number(payload.slippage || 0), benchmark: 'buy_hold', strategy_id: payload.strategy_id || 'ma_cross', strategy_params: payload.strategy_params || {}, status: 'completed', report_md_path: '', report_html_path: '', metrics: { total_return: totalReturn, annual_return: totalReturn * 1.8, volatility: 0.18, max_drawdown: Math.min(...drawdown.map((x) => x.drawdown)), sharpe: 1.32, calmar: 2.1, win_rate: 0.58, profit_loss_ratio: 1.45, avg_holding_days: 12, trade_count: 6, monthly_returns }, chart: { price, equity, benchmark, drawdown, monthly_returns }, orders: [], trades: [] }
+  demoState.backtests = [run, ...demoState.backtests.filter((x) => x.id !== run.id)].slice(0, 20)
+  return run
+}
+const gridItems = (grid) => {
+  const keys = Object.keys(grid || {})
+  if (!keys.length) return [{}]
+  return keys.reduce((rows, key) => rows.flatMap((row) => (grid[key] || []).map((value) => ({ ...row, [key]: value }))), [{}])
+}
+const demoApi = async (url, options = {}) => {
+  const endpoint = new URL(url, window.location.origin)
+  const method = (options.method || 'GET').toUpperCase()
+  if (endpoint.pathname === '/api/strategies') return DEMO_STRATEGIES
+  if (endpoint.pathname === '/api/market-data' && method === 'GET') return { items: demoState.marketItems }
+  if (endpoint.pathname === '/api/market-data/preview') return demoPreview(endpoint.searchParams.get('symbol') || 'AAPL', endpoint.searchParams.get('asset_type') || 'stock')
+  if (endpoint.pathname === '/api/market-data/sync') { const payload = parseBody(options); return demoPreview(payload.symbol, payload.asset_type) }
+  if (endpoint.pathname === '/api/market-data/upload') return { symbol: 'MYDATA', asset_type: 'stock', source: 'demo', rows: 120 }
+  if (endpoint.pathname === '/api/backtests' && method === 'GET') return { items: demoState.backtests, limit: 20, offset: 0 }
+  if (endpoint.pathname === '/api/backtests' && method === 'POST') return demoBacktest(parseBody(options))
+  if (endpoint.pathname.startsWith('/api/backtests/')) return demoState.backtests.find((x) => x.id === endpoint.pathname.split('/').at(-1)) || demoBacktest()
+  if (endpoint.pathname === '/api/optimizations' && method === 'GET') return { items: demoState.optimizations }
+  if (endpoint.pathname === '/api/optimizations' && method === 'POST') {
+    const payload = parseBody(options)
+    const candidates = gridItems(payload.param_grid).slice(0, 9).map((params, index) => { const run = demoBacktest({ ...payload, strategy_params: { ...(payload.strategy_params || {}), ...params } }); return { rank: index + 1, params, metrics: run.metrics, score: run.metrics.sharpe - index * 0.03, backtest_run_id: run.id } })
+    const optimization = { id: `demo-opt-${Date.now()}`, created_at: new Date().toISOString(), symbol: (payload.symbol || 'AAPL').toUpperCase(), asset_type: payload.asset_type || 'stock', data_source: 'demo', strategy_id: payload.strategy_id || 'ma_cross', param_grid: payload.param_grid || {}, best_backtest_id: candidates[0]?.backtest_run_id || '', items: candidates }
+    demoState.optimizations = [optimization, ...demoState.optimizations].slice(0, 10)
+    return optimization
+  }
+  if (endpoint.pathname.startsWith('/api/optimizations/')) return demoState.optimizations.find((x) => x.id === endpoint.pathname.split('/').at(-1)) || { items: [] }
+  throw new Error('静态演示暂不支持该操作')
+}
+api = async (url, options = {}) => {
+  const isApi = String(url).startsWith('/api/')
+  try {
+    const response = await fetch(url, options)
+    if (!response.ok) {
+      const text = await response.text()
+      if (isApi && [404, 405].includes(response.status)) return demoApi(url, options)
+      throw new Error(text)
+    }
+    const contentType = response.headers.get('content-type') || ''
+    if (isApi && !contentType.includes('application/json')) return demoApi(url, options)
+    return await response.json()
+  } catch (error) {
+    if (isApi && (error instanceof TypeError || error instanceof SyntaxError)) return demoApi(url, options)
+    throw error
+  }
 }
 
 createApp({
@@ -85,7 +169,15 @@ createApp({
   },
   methods: {
     pct, signedPct, money,
-    sourceName(src) { return ({ yfinance: '国际行情服务', akshare: '国内行情服务', csv: '示例数据', auto: '智能数据' })[src] || '行情服务' },
+    sourceName(src) { return ({ yfinance: '国际行情服务', akshare: '国内行情服务', csv: '示例数据', demo: '在线演示数据', auto: '智能数据' })[src] || '行情服务' },
+    reportHref(backtest, format) {
+      if (backtest?.data_source === 'demo') {
+        const markdown = `# QuantLab 策略研究报告\n\n标的：${backtest.symbol}\n策略：${backtest.strategy_id}\n总收益：${pct(backtest.metrics.total_return)}\n最大回撤：${pct(backtest.metrics.max_drawdown)}\n\n该报告由在线演示数据生成，用于展示产品交互流程。`
+        if (format === 'html') return `data:text/html;charset=utf-8,${encodeURIComponent(`<article><h1>QuantLab 策略研究报告</h1><p>标的：${backtest.symbol}</p><p>策略：${backtest.strategy_id}</p><p>总收益：${pct(backtest.metrics.total_return)}</p><p>最大回撤：${pct(backtest.metrics.max_drawdown)}</p><p>该报告由在线演示数据生成，用于展示产品交互流程。</p></article>`)}`
+        return `data:text/markdown;charset=utf-8,${encodeURIComponent(markdown)}`
+      }
+      return `/api/backtests/${backtest.id}/report?format=${format}`
+    },
     strategySignalMeaning(id) {
       return ({
         ma_cross: '短均线上穿长均线时 signal=1，代表趋势转强并建立仓位；下穿时 signal=-1，代表趋势转弱并退出。',
@@ -114,7 +206,7 @@ createApp({
         bollinger: '可用于说明均值回归假设、标准差通道和异常波动下的策略适用边界。',
         dca: '可用于说明非择时策略的基准意义，并与主动交易策略做长期表现对比。',
         momentum: '可用于说明动量效应和轮动思想，并结合回撤曲线讨论追涨风险。'
-      })[id] || '可用于毕业论文中的策略原理、参数实验、结果分析和局限性讨论。'
+      })[id] || '可用于产品研究中的策略原理、参数实验、结果分析和局限性讨论。'
     },
     paramHint(param) {
       return ({
@@ -288,7 +380,7 @@ createApp({
 
       <section v-if="page==='home'" class="home-page">
         <div class="hero-panel product-hero"><div class="hero-copy"><p class="eyebrow">QuantLab Research Platform</p><h2>智能量化回测平台</h2><p class="hero-lead">从策略构想到研究报告，一站式完成研究对象建立、策略验证、风险评估与成果展示。</p><div class="hero-actions"><button class="btn primary" @click="switchPage('lab')">开始研究</button><button class="btn ghost" @click="switchPage('strategies')">查看策略能力</button></div></div><div class="product-card"><div class="product-card-top"><span>策略研究概览</span><b>{{ marketPreview?.symbol || 'AAPL' }}</b></div><div class="snapshot-price"><strong>{{ marketPreview ? money(marketPreview.quote.last_close) : '--' }}</strong><em :class="{up:(marketPreview?.quote?.change||0)>=0,down:(marketPreview?.quote?.change||0)<0}">{{ marketPreview ? signedPct(marketPreview.quote.change_pct) : '--' }}</em></div><div id="marketChart" class="market-chart compact"></div></div></div>
-        <div class="value-grid"><div class="value-card"><span>01</span><h3>快速建立研究对象</h3><p>输入标的代码，系统整理价格走势、区间表现和研究样本，减少前期准备成本。</p></div><div class="value-card"><span>02</span><h3>可解释的策略回测</h3><p>内置均线、RSI、MACD、布林带、定投和动量策略，完整记录交易、持仓和权益变化。</p></div><div class="value-card"><span>03</span><h3>面向答辩的结果输出</h3><p>自动生成收益、回撤、胜率、月度表现、参数优化排行榜和研究报告，适合课程设计与毕业展示。</p></div></div>
+        <div class="value-grid"><div class="value-card"><span>01</span><h3>快速建立研究对象</h3><p>输入标的代码，系统整理价格走势、区间表现和研究样本，减少前期准备成本。</p></div><div class="value-card"><span>02</span><h3>可解释的策略回测</h3><p>内置均线、RSI、MACD、布林带、定投和动量策略，完整记录交易、持仓和权益变化。</p></div><div class="value-card"><span>03</span><h3>面向复盘的结果输出</h3><p>自动生成收益、回撤、胜率、月度表现、参数优化排行榜和研究报告，适合产品演示与研究复盘。</p></div></div>
         <div class="quick-study card"><div><p class="eyebrow">Start a Study</p><h3>选择一个标的，立即开始策略分析</h3></div><div class="quick-form"><input v-model="marketForm.symbol" placeholder="AAPL / 600519 / 510300"><select v-model="marketForm.asset_type"><option value="stock">股票</option><option value="fund">基金</option><option value="index">指数</option></select><button class="btn primary" @click="previewMarket">生成研究视图</button><button class="btn ghost" @click="runQuickBacktest">一键回测</button></div><div class="chips"><button @click="applyPreset('AAPL')">Apple</button><button @click="applyPreset('MSFT')">Microsoft</button><button @click="applyPreset('600519')">贵州茅台</button><button @click="applyPreset('510300','fund')">沪深300 ETF</button></div></div>
         <div class="metric-strip"><div v-for="m in dashboardMetrics" class="glass-metric"><span>{{m[0]}}</span><b>{{m[1]}}</b></div></div>
       </section>
@@ -299,16 +391,17 @@ createApp({
       <section v-if="page==='detail' && !selectedBacktest" class="empty-card">还没有回测结果，先在“首页”或“开始研究”运行一次。</section>
 
       <section v-if="page==='strategies'" class="strategy-library">
-        <div class="library-intro card"><p class="eyebrow">Strategy Library</p><h2>策略库</h2><p class="muted">这里把每个策略的交易逻辑、信号含义、参数说明、回测解读和论文展示要点统一写清楚，方便直接用于课程设计展示和毕业论文说明。</p></div>
-        <div class="strategy-grid detailed"><article class="strategy-card strategy-detail" v-for="s in strategies" :key="s.id"><div class="strategy-head"><span>{{s.id}}</span><h3>{{s.name}}</h3></div><p class="strategy-summary">{{s.description}}</p><div class="strategy-sections"><div class="strategy-section"><b>策略逻辑</b><p>{{s.description}}</p></div><div class="strategy-section"><b>信号含义</b><p>{{strategySignalMeaning(s.id)}}</p></div><div class="strategy-section"><b>适用场景</b><p>{{s.scenario}}</p></div><div class="strategy-section"><b>回测解读</b><p>{{strategyBacktestNote(s.id)}}</p></div><div class="strategy-section"><b>论文展示要点</b><p>{{strategyThesisNote(s.id)}}</p></div></div><div class="param-panel"><b>参数说明</b><ul class="param-list"><li v-for="p in s.parameters" :key="p.name"><strong>{{p.label}}</strong><span>默认值：{{p.default}}</span><small>{{paramHint(p)}}</small></li></ul></div><div class="strategy-risk"><b>风险提示</b><p>{{s.risk_note}}</p></div></article></div>
+        <div class="library-intro card"><p class="eyebrow">Strategy Library</p><h2>策略库</h2><p class="muted">这里把每个策略的交易逻辑、信号含义、参数说明、回测解读和产品展示要点统一写清楚，方便直接用于产品演示和研究复盘说明。</p></div>
+        <div class="strategy-grid detailed"><article class="strategy-card strategy-detail" v-for="s in strategies" :key="s.id"><div class="strategy-head"><span>{{s.id}}</span><h3>{{s.name}}</h3></div><p class="strategy-summary">{{s.description}}</p><div class="strategy-sections"><div class="strategy-section"><b>策略逻辑</b><p>{{s.description}}</p></div><div class="strategy-section"><b>信号含义</b><p>{{strategySignalMeaning(s.id)}}</p></div><div class="strategy-section"><b>适用场景</b><p>{{s.scenario}}</p></div><div class="strategy-section"><b>回测解读</b><p>{{strategyBacktestNote(s.id)}}</p></div><div class="strategy-section"><b>产品展示要点</b><p>{{strategyThesisNote(s.id)}}</p></div></div><div class="param-panel"><b>参数说明</b><ul class="param-list"><li v-for="p in s.parameters" :key="p.name"><strong>{{p.label}}</strong><span>默认值：{{p.default}}</span><small>{{paramHint(p)}}</small></li></ul></div><div class="strategy-risk"><b>风险提示</b><p>{{s.risk_note}}</p></div></article></div>
       </section>
 
       <section v-if="page==='optimization'" class="split"><div class="card"><h2>参数优化</h2><div class="form-grid"><label>标的<input v-model="optimizationForm.symbol"></label><label>策略<select v-model="optimizationForm.strategy_id" @change="resetOptimizationGrid"><option v-for="s in strategies" :value="s.id">{{s.name}}</option></select></label><label>开始<input type="date" v-model="optimizationForm.start"></label><label>结束<input type="date" v-model="optimizationForm.end"></label></div><label>参数网格 JSON<textarea v-model="optimizationForm.param_grid_text"></textarea></label><button class="btn primary" @click="runOptimization">运行优化</button><div id="optimizationChart" class="chart"></div></div><div class="card"><h2>排行榜</h2><div class="table-wrap"><table><tr><th>排名</th><th>参数</th><th>收益</th><th>回撤</th><th>操作</th></tr><tr v-for="i in selectedOptimization?.items || []"><td>{{i.rank}}</td><td>{{JSON.stringify(i.params)}}</td><td>{{pct(i.metrics.total_return)}}</td><td>{{pct(i.metrics.max_drawdown)}}</td><td><button class="btn tiny" @click="loadBacktest(i.backtest_run_id)">查看</button></td></tr></table></div></div></section>
 
-      <section v-if="page==='history'" class="card"><h2>历史回测与报告</h2><div class="table-wrap"><table><tr><th>时间</th><th>标的</th><th>策略</th><th>收益</th><th>报告</th><th>操作</th></tr><tr v-for="b in backtests"><td>{{b.created_at.slice(0,19)}}</td><td>{{b.symbol}}</td><td>{{b.strategy_id}}</td><td>{{pct(b.metrics.total_return)}}</td><td><a :href="'/api/backtests/'+b.id+'/report?format=html'" target="_blank">HTML</a> / <a :href="'/api/backtests/'+b.id+'/report?format=markdown'" target="_blank">MD</a></td><td><button class="btn tiny" @click="loadBacktest(b.id)">分析</button></td></tr></table></div></section>
+      <section v-if="page==='history'" class="card"><h2>历史回测与报告</h2><div class="table-wrap"><table><tr><th>时间</th><th>标的</th><th>策略</th><th>收益</th><th>报告</th><th>操作</th></tr><tr v-for="b in backtests"><td>{{b.created_at.slice(0,19)}}</td><td>{{b.symbol}}</td><td>{{b.strategy_id}}</td><td>{{pct(b.metrics.total_return)}}</td><td><a :href="reportHref(b,'html')" target="_blank">HTML</a> / <a :href="reportHref(b,'markdown')" target="_blank">MD</a></td><td><button class="btn tiny" @click="loadBacktest(b.id)">分析</button></td></tr></table></div></section>
 
       <section v-if="page==='data'" class="split"><div class="card"><h2>数据管理</h2><p class="muted">这里用于管理本地缓存和导入自定义研究数据，普通用户可直接从首页开始研究。</p><div class="form-grid"><label>标的<input v-model="uploadForm.symbol"></label><label>资产类型<select v-model="uploadForm.asset_type"><option value="stock">股票</option><option value="fund">基金</option><option value="index">指数</option></select></label><label>本地数据文件<input type="file" accept=".csv" @change="uploadCsv"></label></div></div><div class="card"><h2>缓存列表</h2><div class="table-wrap"><table><tr><th>标的</th><th>类型</th><th>来源</th><th>行数</th><th>区间</th></tr><tr v-for="x in marketItems"><td>{{x.symbol}}</td><td>{{x.asset_type}}</td><td>{{sourceName(x.source)}}</td><td>{{x.rows}}</td><td>{{x.start}} ~ {{x.end}}</td></tr></table></div></div></section>
     </main>
   </div>`
 }).mount('#app')
+
 

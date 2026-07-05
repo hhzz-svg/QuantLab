@@ -10,7 +10,9 @@ MAIN_JS = PROJECT_ROOT / "frontend" / "src" / "main.js"
 def test_docs_use_current_product_language_and_current_interfaces():
     doc_paths = [
         PROJECT_ROOT / "README.md",
+        PROJECT_ROOT / "docs" / "01-需求文档.md",
         PROJECT_ROOT / "docs" / "02-架构设计.md",
+        PROJECT_ROOT / "docs" / "06-产品介绍素材.md",
         PROJECT_ROOT / "docs" / "usage.md",
         WORKSPACE_ROOT / "docs" / "quant-backtest-system.md",
     ]
@@ -19,7 +21,7 @@ def test_docs_use_current_product_language_and_current_interfaces():
         "行情" + "终端",
         "不用上传" + " CSV",
         "默认" + "联网",
-        "教学型" + " MVP",
+        "\u6559\u5b66\u578b" + " MVP",
         "不依赖" + "数据库",
         "Yahoo" + " Finance",
         "Tu" + "share",
@@ -54,3 +56,12 @@ def test_optimization_page_has_strategy_specific_grid_templates():
         for param in params:
             assert f'"{param}"' in content
     assert "this.optimizationGridTemplates[this.optimizationForm.strategy_id]" in content
+
+
+def test_public_package_and_frontend_use_product_positioning():
+    package_text = (PROJECT_ROOT / "package.json").read_text(encoding="utf-8")
+    main_js = MAIN_JS.read_text(encoding="utf-8")
+    assert "quantlab-backtest-platform" in package_text
+    assert ("gradu" + "ation") not in package_text
+    assert "产品展示要点" in main_js
+    assert "在线演示数据" in main_js

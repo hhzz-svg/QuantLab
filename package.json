@@ -1,5 +1,5 @@
 {
-  "name": "quantlab-graduation-backtest-platform",
+  "name": "quantlab-backtest-platform",
   "version": "2.0.0",
   "private": true,
   "type": "module",

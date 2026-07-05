@@ -21,7 +21,7 @@ def create_app(database_url: str | None = None) -> FastAPI:
     engine = create_engine_for_url(database_url) if database_url else create_engine_for_url()
     init_db(engine)
     SessionLocal = create_session_factory(engine)
-    app = FastAPI(title="QuantLab 本科毕业设计级量化回测平台", version="2.0.0")
+    app = FastAPI(title="QuantLab 智能量化回测平台", version="2.0.0")
     app.state.engine = engine
     app.state.SessionLocal = SessionLocal
     app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -117,4 +117,5 @@ def create_app(database_url: str | None = None) -> FastAPI:
 
 
 app = create_app()
+
 

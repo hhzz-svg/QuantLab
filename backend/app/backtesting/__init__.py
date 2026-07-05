@@ -1,1 +1,2 @@
-﻿"""QuantLab graduation-level backtest platform package."""
+﻿"""QuantLab product backtest platform package."""
+

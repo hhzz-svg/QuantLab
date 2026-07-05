@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MAIN_JS = PROJECT_ROOT / "frontend" / "src" / "main.js"
@@ -48,7 +48,7 @@ def test_strategy_library_has_detailed_research_explanations():
         "策略逻辑",
         "参数说明",
         "回测解读",
-        "论文展示要点",
+        "产品展示要点",
         "默认值",
         "信号含义",
     ]
@@ -70,3 +70,4 @@ def test_research_page_supports_click_to_select_symbols():
     ]
     for text in expected:
         assert text in content
+
