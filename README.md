@@ -37,20 +37,28 @@ QuantLab 是一套面向企业内部投研、策略验证和量化实验管理�
 
 ## 架构概览
 
-```mermaid
-flowchart LR
-    A["Cloudflare Pages<br/>quantlab.aihzcc.top"] --> B["Render Web Service<br/>api.quantlab.aihzcc.top"]
-    B --> C["FastAPI API Layer"]
-    C --> D["Market Data Adapters"]
-    C --> E["Strategy Library"]
-    C --> F["Backtest Engine"]
-    C --> G["Optimization Service"]
-    C --> H["Report Service"]
-    D --> I[("SQLite Research Cache")]
-    F --> I
-    G --> I
-    H --> I
+```text
+用户访问
+  ↓
+Cloudflare Pages 前端（quantlab.aihzcc.top）
+  ↓
+Render Web Service 后端（api.quantlab.aihzcc.top）
+  ↓
+FastAPI 接口层
+  ├─ Market Data Adapters：yfinance / AKShare / CSV
+  ├─ Strategy Library：策略库与参数说明
+  ├─ Backtest Engine：事件驱动回测
+  ├─ Optimization Service：参数网格优化
+  ├─ Report Service：Markdown / HTML 报告
+  └─ SQLite Research Cache：研究数据与实验结果缓存
 ```
+
+| 层级 | 职责 |
+| --- | --- |
+| Cloudflare Pages | 承载线上前端入口和静态资源 |
+| Render Web Service | 运行 FastAPI 后端服务 |
+| FastAPI 接口层 | 对外提供行情、策略、回测、优化和报告接口 |
+| SQLite Research Cache | 保存轻量研究数据、回测记录和实验结果 |
 
 ## 技术栈
 
