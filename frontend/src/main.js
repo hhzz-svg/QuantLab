@@ -8,7 +8,30 @@ const signedPct = (v) => `${Number(v || 0) >= 0 ? '+' : ''}${((Number(v) || 0) *
 const money = (v) => Number(v || 0).toLocaleString('zh-CN', { maximumFractionDigits: 2 })
 const today = () => new Date().toISOString().slice(0, 10)
 const oneYearAgo = () => { const d = new Date(); d.setFullYear(d.getFullYear() - 1); return d.toISOString().slice(0, 10) }
-const chartOf = (id) => { const el = document.getElementById(id); return el ? (echarts.getInstanceByDom(el) || echarts.init(el)) : null }
+const CHART_COLORS = { up: '#22c55e', down: '#ef4444', accent: '#38bdf8', bench: '#64748b' }
+echarts.registerTheme('quantlab-dark', {
+  color: ['#38bdf8', '#818cf8', '#22c55e', '#fbbf24', '#f87171', '#2dd4bf'],
+  backgroundColor: 'transparent',
+  textStyle: { color: '#b7c3da' },
+  legend: { textStyle: { color: '#b7c3da' } },
+  tooltip: {
+    backgroundColor: 'rgba(13,20,38,.94)', borderColor: 'rgba(148,163,184,.25)', borderWidth: 1,
+    textStyle: { color: '#e8eefb' },
+    axisPointer: { lineStyle: { color: 'rgba(56,189,248,.4)' }, crossStyle: { color: 'rgba(56,189,248,.4)' } }
+  },
+  categoryAxis: { axisLine: { lineStyle: { color: 'rgba(148,163,184,.25)' } }, axisTick: { show: false }, axisLabel: { color: '#8494ae' }, splitLine: { show: false } },
+  valueAxis: { axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: '#8494ae' }, splitLine: { lineStyle: { color: 'rgba(132,148,174,.14)' } }, nameTextStyle: { color: '#8494ae' } }
+})
+const chartOf = (id) => { const el = document.getElementById(id); return el ? (echarts.getInstanceByDom(el) || echarts.init(el, 'quantlab-dark')) : null }
+const NAV_ITEMS = [
+  { id: 'home', label: '首页', icon: '<svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5.5 10v9.5h13V10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
+  { id: 'lab', label: '开始研究', icon: '<svg viewBox="0 0 24 24"><path d="M9.5 3h5M10 3v6l-5.2 8.5A2 2 0 0 0 6.5 21h11a2 2 0 0 0 1.7-3.1L14 9.5V3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
+  { id: 'detail', label: '结果分析', icon: '<svg viewBox="0 0 24 24"><path d="M4 20V9m5.5 11V4M15 20v-7m5 7V7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>' },
+  { id: 'strategies', label: '策略库', icon: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="4" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="4" y="13" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="13" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>' },
+  { id: 'optimization', label: '参数优化', icon: '<svg viewBox="0 0 24 24"><path d="M5 8h10M5 16h4m8 0h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="17" cy="8" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="11" cy="16" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>' },
+  { id: 'history', label: '研究报告', icon: '<svg viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7zM14 3v4h4M10 12h6m-6 4h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
+  { id: 'data', label: '数据管理', icon: '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="7" ry="2.8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 5.5v13c0 1.6 3.1 2.8 7 2.8s7-1.2 7-2.8v-13M5 12c0 1.6 3.1 2.8 7 2.8s7-1.2 7-2.8" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>' }
+]
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
 const apiUrl = (url) => String(url).startsWith('/api/') && API_BASE_URL ? `${API_BASE_URL}${url}` : url
 const OPTIMIZATION_GRID_TEMPLATES = {
@@ -133,6 +156,8 @@ createApp({
     return {
       page: 'home',
       status: '',
+      navOpen: false,
+      navItems: NAV_ITEMS,
       strategies: [],
       marketItems: [],
       backtests: [],
@@ -352,33 +377,35 @@ createApp({
       const chart = chartOf('marketChart')
       if (!chart || !this.marketPreview) return
       const data = this.marketPreview.chart
-      chart.setOption({ backgroundColor: 'transparent', tooltip: { trigger: 'axis' }, grid: { left: 36, right: 12, top: 24, bottom: 30 }, xAxis: { type: 'category', data: data.map(x => x.date), axisLabel: { color: '#94a3b8' } }, yAxis: { type: 'value', scale: true, splitLine: { lineStyle: { color: 'rgba(148,163,184,.18)' } }, axisLabel: { color: '#94a3b8' } }, series: [{ name: '收盘价', type: 'line', smooth: true, showSymbol: false, data: data.map(x => x.close), lineStyle: { width: 3, color: '#2563eb' }, areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(37,99,235,.24)' }, { offset: 1, color: 'rgba(37,99,235,0)' }] } } }] })
+      chart.setOption({ backgroundColor: 'transparent', tooltip: { trigger: 'axis' }, grid: { left: 36, right: 12, top: 24, bottom: 30 }, xAxis: { type: 'category', data: data.map(x => x.date) }, yAxis: { type: 'value', scale: true }, series: [{ name: '收盘价', type: 'line', smooth: true, showSymbol: false, data: data.map(x => x.close), lineStyle: { width: 2.5, color: CHART_COLORS.accent }, areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(56,189,248,.28)' }, { offset: 1, color: 'rgba(56,189,248,0)' }] } } }] })
     },
     renderBacktestCharts() { if (this.page !== 'detail' || !this.selectedBacktest) return; this.renderPriceChart(); this.renderEquityChart(); this.renderDrawdownChart(); this.renderMonthlyChart() },
-    renderPriceChart() { const chart = chartOf('priceChart'); if (!chart) return; const data = this.selectedBacktest.chart.price; chart.setOption({ tooltip: { trigger: 'axis' }, xAxis: { type: 'category', data: data.map(x => x.date) }, yAxis: { type: 'value', scale: true }, series: [{ name: '收盘价', type: 'line', smooth: true, data: data.map(x => x.close), markPoint: { data: data.filter(x => x.signal !== 0).map(x => ({ coord: [x.date, x.close], value: x.signal > 0 ? '买' : '卖', itemStyle: { color: x.signal > 0 ? '#16a34a' : '#dc2626' } })) } }] }) },
-    renderEquityChart() { const chart = chartOf('equityChart'); if (!chart) return; const c = this.selectedBacktest.chart; chart.setOption({ tooltip: { trigger: 'axis' }, legend: { data: ['策略权益', '买入持有'] }, xAxis: { type: 'category', data: c.equity.map(x => x.date) }, yAxis: { type: 'value', scale: true }, series: [{ name: '策略权益', type: 'line', smooth: true, data: c.equity.map(x => x.equity) }, { name: '买入持有', type: 'line', smooth: true, data: c.benchmark.map(x => x.equity) }] }) },
-    renderDrawdownChart() { const chart = chartOf('drawdownChart'); if (!chart) return; const data = this.selectedBacktest.chart.drawdown; chart.setOption({ tooltip: { trigger: 'axis', valueFormatter: pct }, xAxis: { type: 'category', data: data.map(x => x.date) }, yAxis: { type: 'value', axisLabel: { formatter: v => `${(v * 100).toFixed(0)}%` } }, series: [{ name: '回撤', type: 'line', areaStyle: {}, data: data.map(x => x.drawdown) }] }) },
-    renderMonthlyChart() { const chart = chartOf('monthlyChart'); if (!chart) return; const data = this.selectedBacktest.chart.monthly_returns || []; chart.setOption({ tooltip: { valueFormatter: pct }, xAxis: { type: 'category', data: data.map(x => x.month) }, yAxis: { type: 'value', axisLabel: { formatter: v => `${(v * 100).toFixed(0)}%` } }, series: [{ name: '月度收益', type: 'bar', data: data.map(x => x.return), itemStyle: { color: p => p.value >= 0 ? '#2563eb' : '#dc2626' } }] }) },
-    renderOptimizationChart() { const chart = chartOf('optimizationChart'); if (!chart || !this.selectedOptimization) return; const data = this.selectedOptimization.items.map(x => [x.metrics.max_drawdown, x.metrics.total_return, x.rank, JSON.stringify(x.params)]); chart.setOption({ tooltip: { formatter: p => `排名 ${p.data[2]}<br/>收益 ${pct(p.data[1])}<br/>回撤 ${pct(p.data[0])}<br/>${p.data[3]}` }, xAxis: { name: '最大回撤', axisLabel: { formatter: v => `${(v * 100).toFixed(0)}%` } }, yAxis: { name: '总收益', axisLabel: { formatter: v => `${(v * 100).toFixed(0)}%` } }, series: [{ type: 'scatter', symbolSize: 14, data }] }) }
+    renderPriceChart() { const chart = chartOf('priceChart'); if (!chart) return; const data = this.selectedBacktest.chart.price; chart.setOption({ tooltip: { trigger: 'axis' }, xAxis: { type: 'category', data: data.map(x => x.date) }, yAxis: { type: 'value', scale: true }, series: [{ name: '收盘价', type: 'line', smooth: true, showSymbol: false, data: data.map(x => x.close), lineStyle: { width: 2, color: CHART_COLORS.accent }, markPoint: { label: { color: '#0b1120', fontWeight: 900 }, data: data.filter(x => x.signal !== 0).map(x => ({ coord: [x.date, x.close], value: x.signal > 0 ? '买' : '卖', itemStyle: { color: x.signal > 0 ? CHART_COLORS.up : CHART_COLORS.down } })) } }] }) },
+    renderEquityChart() { const chart = chartOf('equityChart'); if (!chart) return; const c = this.selectedBacktest.chart; chart.setOption({ tooltip: { trigger: 'axis' }, legend: { data: ['策略权益', '买入持有'] }, xAxis: { type: 'category', data: c.equity.map(x => x.date) }, yAxis: { type: 'value', scale: true }, series: [{ name: '策略权益', type: 'line', smooth: true, showSymbol: false, data: c.equity.map(x => x.equity), lineStyle: { width: 2.5, color: CHART_COLORS.accent }, itemStyle: { color: CHART_COLORS.accent }, areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(56,189,248,.14)' }, { offset: 1, color: 'rgba(56,189,248,0)' }] } } }, { name: '买入持有', type: 'line', smooth: true, showSymbol: false, data: c.benchmark.map(x => x.equity), lineStyle: { width: 1.5, type: 'dashed', color: CHART_COLORS.bench }, itemStyle: { color: CHART_COLORS.bench } }] }) },
+    renderDrawdownChart() { const chart = chartOf('drawdownChart'); if (!chart) return; const data = this.selectedBacktest.chart.drawdown; chart.setOption({ tooltip: { trigger: 'axis', valueFormatter: pct }, xAxis: { type: 'category', data: data.map(x => x.date) }, yAxis: { type: 'value', axisLabel: { formatter: v => `${(v * 100).toFixed(0)}%` } }, series: [{ name: '回撤', type: 'line', showSymbol: false, lineStyle: { width: 1.5, color: CHART_COLORS.down }, itemStyle: { color: CHART_COLORS.down }, areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(239,68,68,.3)' }, { offset: 1, color: 'rgba(239,68,68,.02)' }] } }, data: data.map(x => x.drawdown) }] }) },
+    renderMonthlyChart() { const chart = chartOf('monthlyChart'); if (!chart) return; const data = this.selectedBacktest.chart.monthly_returns || []; chart.setOption({ tooltip: { valueFormatter: pct }, xAxis: { type: 'category', data: data.map(x => x.month) }, yAxis: { type: 'value', axisLabel: { formatter: v => `${(v * 100).toFixed(0)}%` } }, series: [{ name: '月度收益', type: 'bar', data: data.map(x => x.return), itemStyle: { borderRadius: [3, 3, 0, 0], color: p => p.value >= 0 ? CHART_COLORS.up : CHART_COLORS.down } }] }) },
+    renderOptimizationChart() { const chart = chartOf('optimizationChart'); if (!chart || !this.selectedOptimization) return; const data = this.selectedOptimization.items.map(x => [x.metrics.max_drawdown, x.metrics.total_return, x.rank, JSON.stringify(x.params)]); chart.setOption({ tooltip: { formatter: p => `排名 ${p.data[2]}<br/>收益 ${pct(p.data[1])}<br/>回撤 ${pct(p.data[0])}<br/>${p.data[3]}` }, xAxis: { name: '最大回撤', axisLabel: { formatter: v => `${(v * 100).toFixed(0)}%` } }, yAxis: { name: '总收益', axisLabel: { formatter: v => `${(v * 100).toFixed(0)}%` } }, series: [{ type: 'scatter', symbolSize: 14, data, itemStyle: { color: p => p.data[2] === 1 ? CHART_COLORS.up : 'rgba(56,189,248,.75)', shadowBlur: 8, shadowColor: 'rgba(56,189,248,.4)' } }] }) }
   },
   async mounted() { await this.refreshAll(); this.resetStrategyParams(); await this.previewMarket() },
   template: `
-  <div class="product-app">
-    <header class="site-nav">
+  <div class="app-shell">
+    <div class="nav-backdrop" v-if="navOpen" @click="navOpen=false"></div>
+    <aside class="sidebar" :class="{open: navOpen}">
       <div class="brand-mark"><span class="pulse"></span><div><b>QuantLab</b><small>智能量化回测平台</small></div></div>
-      <nav>
-        <button :class="{active:page==='home'}" @click="switchPage('home')">首页</button>
-        <button :class="{active:page==='lab'}" @click="switchPage('lab')">开始研究</button>
-        <button :class="{active:page==='detail'}" @click="switchPage('detail')">结果分析</button>
-        <button :class="{active:page==='strategies'}" @click="switchPage('strategies')">策略库</button>
-        <button :class="{active:page==='optimization'}" @click="switchPage('optimization')">参数优化</button>
-        <button :class="{active:page==='history'}" @click="switchPage('history')">研究报告</button>
-        <button :class="{active:page==='data'}" @click="switchPage('data')">数据管理</button>
+      <nav class="side-nav">
+        <button v-for="item in navItems" :key="item.id" :class="{active: page===item.id}" @click="switchPage(item.id); navOpen=false">
+          <span class="nav-icon" v-html="item.icon"></span><span class="nav-label">{{ item.label }}</span>
+        </button>
       </nav>
-      <button class="nav-cta" @click="switchPage('lab')">开始研究</button>
-    </header>
-    <main class="workspace">
-      <header class="topbar"><div><p class="eyebrow">{{ pageKicker }}</p><h1>{{ pageTitle }}</h1></div><div class="status-pill">{{ status || '选择标的与策略，生成可复盘的研究结果。' }}</div></header>
+      <button class="nav-cta" @click="switchPage('lab'); navOpen=false">开始研究</button>
+    </aside>
+    <div class="main-area">
+      <header class="topbar">
+        <button class="menu-toggle" @click="navOpen=!navOpen" aria-label="菜单"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button>
+        <div class="topbar-title"><p class="eyebrow">{{ pageKicker }}</p><h1>{{ pageTitle }}</h1></div>
+        <div class="status-pill">{{ status || '选择标的与策略，生成可复盘的研究结果。' }}</div>
+      </header>
+      <main class="workspace">
 
       <section v-if="page==='home'" class="home-page">
         <div class="hero-panel product-hero"><div class="hero-copy"><p class="eyebrow">QuantLab Research Platform</p><h2>智能量化回测平台</h2><p class="hero-lead">从策略构想到研究报告，一站式完成研究对象建立、策略验证、风险评估与成果展示。</p><div class="hero-actions"><button class="btn primary" @click="switchPage('lab')">开始研究</button><button class="btn ghost" @click="switchPage('strategies')">查看策略能力</button></div></div><div class="product-card"><div class="product-card-top"><span>策略研究概览</span><b>{{ marketPreview?.symbol || 'AAPL' }}</b></div><div class="snapshot-price"><strong>{{ marketPreview ? money(marketPreview.quote.last_close) : '--' }}</strong><em :class="{up:(marketPreview?.quote?.change||0)>=0,down:(marketPreview?.quote?.change||0)<0}">{{ marketPreview ? signedPct(marketPreview.quote.change_pct) : '--' }}</em></div><div id="marketChart" class="market-chart compact"></div></div></div>
@@ -402,7 +429,8 @@ createApp({
       <section v-if="page==='history'" class="card"><h2>历史回测与报告</h2><div class="table-wrap"><table><tr><th>时间</th><th>标的</th><th>策略</th><th>收益</th><th>报告</th><th>操作</th></tr><tr v-for="b in backtests"><td>{{b.created_at.slice(0,19)}}</td><td>{{b.symbol}}</td><td>{{b.strategy_id}}</td><td>{{pct(b.metrics.total_return)}}</td><td><a :href="reportHref(b,'html')" target="_blank">HTML</a> / <a :href="reportHref(b,'markdown')" target="_blank">MD</a></td><td><button class="btn tiny" @click="loadBacktest(b.id)">分析</button></td></tr></table></div></section>
 
       <section v-if="page==='data'" class="split"><div class="card"><h2>数据管理</h2><p class="muted">这里用于管理本地缓存和导入自定义研究数据，普通用户可直接从首页开始研究。</p><div class="form-grid"><label>标的<input v-model="uploadForm.symbol"></label><label>资产类型<select v-model="uploadForm.asset_type"><option value="stock">股票</option><option value="fund">基金</option><option value="index">指数</option></select></label><label>本地数据文件<input type="file" accept=".csv" @change="uploadCsv"></label></div></div><div class="card"><h2>缓存列表</h2><div class="table-wrap"><table><tr><th>标的</th><th>类型</th><th>来源</th><th>行数</th><th>区间</th></tr><tr v-for="x in marketItems"><td>{{x.symbol}}</td><td>{{x.asset_type}}</td><td>{{sourceName(x.source)}}</td><td>{{x.rows}}</td><td>{{x.start}} ~ {{x.end}}</td></tr></table></div></div></section>
-    </main>
+      </main>
+    </div>
   </div>`
 }).mount('#app')
 
