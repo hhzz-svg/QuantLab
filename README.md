@@ -1,26 +1,24 @@
 # QuantLab 智能量化投研与回测平台
 
-QuantLab 是一套面向企业内部投研、策略验证和量化实验管理的 Web 化量化研究平台。平台已采用前后端分离的公网部署架构：前端运行在 Cloudflare Pages，后端 FastAPI 服务运行在 Render Web Service，并通过独立 API 域名对外提供服务。
+QuantLab 是一套面向企业内部投研、策略验证和量化实验管理的 Web 化量化研究平台。平台已经完成线上部署，访问者可以直接打开 Web 应用体验完整研究流程，无需关注后端部署细节。
 
 平台围绕“研究对象建立 → 策略验证 → 风险评估 → 参数优化 → 研究报告”形成闭环，帮助投研团队把一次策略研究从临时验证升级为可复盘、可追溯、可演示的研究资产。
 
-## 生产环境
+## 在线体验
 
 | 模块 | 地址 | 说明 |
 | --- | --- | --- |
-| Web 应用 | [https://quantlab.aihzcc.top](https://quantlab.aihzcc.top) | Cloudflare Pages 承载的线上前端入口 |
-| API 服务 | [https://api.quantlab.aihzcc.top](https://api.quantlab.aihzcc.top) | Render 承载的后端 API 域名 |
-| API 健康检查 | [https://api.quantlab.aihzcc.top/api/strategies](https://api.quantlab.aihzcc.top/api/strategies) | 用于验证后端服务可用性 |
-| 代码仓库 | [https://github.com/hhzz-svg/QuantLab](https://github.com/hhzz-svg/QuantLab) | 前后端与部署配置统一托管 |
+| Web 应用 | [https://quantlab.aihzcc.top](https://quantlab.aihzcc.top) | 直接访问即可体验量化研究、回测分析、参数优化和报告导出流程 |
+| 代码仓库 | [https://github.com/hhzz-svg/QuantLab](https://github.com/hhzz-svg/QuantLab) | 前后端源码与部署配置统一托管 |
 
-线上前端通过 `VITE_API_BASE_URL=https://api.quantlab.aihzcc.top` 连接 Render 后端；当后端不可用时，前端仍保留静态演示兜底，避免公开访问入口直接失效。
+面向普通访问者只需要打开 Web 应用；后端部署、环境变量和健康检查方式统一放在 [`docs/07-部署说明.md`](docs/07-部署说明.md) 中维护。
 
 ## 企业级价值
 
 - **统一研究流程**：将标的选择、策略配置、回测执行、风险评估、参数实验和报告输出整合在同一工作台。
 - **沉淀研究证据链**：每次回测保留参数、交易、权益曲线、指标和报告，便于复盘、展示和横向比较。
 - **降低策略验证成本**：内置常用策略模板和参数网格，让研究人员快速完成从想法到结果的第一轮验证。
-- **支持线上演示和交付**：前端、后端、API 域名和健康检查均已公网化，适合项目展示、评审汇报和持续迭代。
+- **支持线上演示和交付**：线上 Web 入口已可直接访问，适合项目展示、评审汇报和持续迭代。
 - **保留扩展路径**：当前使用 SQLite 满足轻量研究与演示，后续可平滑替换为托管数据库以支撑更强的数据持久化和协作能力。
 
 ## 核心能力
@@ -42,7 +40,7 @@ QuantLab 是一套面向企业内部投研、策略验证和量化实验管理�
   ↓
 Cloudflare Pages 前端（quantlab.aihzcc.top）
   ↓
-Render Web Service 后端（api.quantlab.aihzcc.top）
+后端服务
   ↓
 FastAPI 接口层
   ├─ Market Data Adapters：yfinance / AKShare / CSV
@@ -78,14 +76,7 @@ tests/     后端能力、部署配置、文档一致性和前端文案回归测
 
 ## 线上部署
 
-当前线上架构已经完成：
-
-1. GitHub 仓库作为 Render 和 Cloudflare Pages 的统一部署源。
-2. Render Web Service 运行 `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`。
-3. Cloudflare Pages 前端生产环境配置 `VITE_API_BASE_URL=https://api.quantlab.aihzcc.top`。
-4. 自定义域名 `api.quantlab.aihzcc.top` 指向 Render 后端服务。
-
-完整部署配置见 [`docs/07-部署说明.md`](docs/07-部署说明.md)。
+当前线上环境已经完成，访问者只需要打开 Web 应用即可使用。完整部署配置、后端运行方式、环境变量、健康检查和回滚方式见 [`docs/07-部署说明.md`](docs/07-部署说明.md)。
 
 ## 本地运行
 
