@@ -30,6 +30,7 @@ QuantLab 是面向投资研究的智能量化回测平台，提供策略验证�
 - 前端：Vue 3 + Vite + ECharts。
 - 数据：在线行情适配器、本地缓存和 CSV 导入。
 - 部署：Cloudflare Pages 承载前端静态站点，本地 FastAPI 提供完整 API 能力。
+- 线上后端：可部署到 Render Web Service，并通过 `VITE_API_BASE_URL` 让前端连接 `api.quantlab.aihzcc.top`。
 
 ## 项目结构
 
@@ -39,6 +40,10 @@ frontend/  Vue 3 前端应用与静态演示兜底
 docs/      产品、架构、使用和测试文档
 tests/     后端能力、文档一致性和前端文案回归测试
 ```
+
+## 线上部署
+
+后端推荐部署为独立 Python Web Service，前端继续由 Cloudflare Pages 承载。完整配置见 [`docs/07-部署说明.md`](docs/07-部署说明.md)。
 
 ## 本地运行
 

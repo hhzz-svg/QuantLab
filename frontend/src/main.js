@@ -9,6 +9,8 @@ const money = (v) => Number(v || 0).toLocaleString('zh-CN', { maximumFractionDig
 const today = () => new Date().toISOString().slice(0, 10)
 const oneYearAgo = () => { const d = new Date(); d.setFullYear(d.getFullYear() - 1); return d.toISOString().slice(0, 10) }
 const chartOf = (id) => { const el = document.getElementById(id); return el ? (echarts.getInstanceByDom(el) || echarts.init(el)) : null }
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
+const apiUrl = (url) => String(url).startsWith('/api/') && API_BASE_URL ? `${API_BASE_URL}${url}` : url
 const OPTIMIZATION_GRID_TEMPLATES = {
   ma_cross: `{
   "short_window": [3, 5, 8],
@@ -111,7 +113,7 @@ const demoApi = async (url, options = {}) => {
 api = async (url, options = {}) => {
   const isApi = String(url).startsWith('/api/')
   try {
-    const response = await fetch(url, options)
+    const response = await fetch(apiUrl(url), options)
     if (!response.ok) {
       const text = await response.text()
       if (isApi && [404, 405].includes(response.status)) return demoApi(url, options)
@@ -176,7 +178,7 @@ createApp({
         if (format === 'html') return `data:text/html;charset=utf-8,${encodeURIComponent(`<article><h1>QuantLab 策略研究报告</h1><p>标的：${backtest.symbol}</p><p>策略：${backtest.strategy_id}</p><p>总收益：${pct(backtest.metrics.total_return)}</p><p>最大回撤：${pct(backtest.metrics.max_drawdown)}</p><p>该报告由在线演示数据生成，用于展示产品交互流程。</p></article>`)}`
         return `data:text/markdown;charset=utf-8,${encodeURIComponent(markdown)}`
       }
-      return `/api/backtests/${backtest.id}/report?format=${format}`
+      return apiUrl(`/api/backtests/${backtest.id}/report?format=${format}`)
     },
     strategySignalMeaning(id) {
       return ({
