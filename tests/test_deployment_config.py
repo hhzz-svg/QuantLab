@@ -22,6 +22,7 @@ def test_render_deployment_config_documents_required_commands():
     readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
     assert "uvicorn backend.main:app --host 0.0.0.0 --port $PORT" in render_yaml
     assert "pip install -r requirements.txt" in render_yaml
-    assert "quantlab-cn2.pages.dev" in deployment_doc
-    assert "https://quantlab-cn2.pages.dev" in readme
+    assert "https://quantlab.aihzcc.top" in deployment_doc
+    assert "https://quantlab.aihzcc.top" in readme
+    assert "https://quantlab-cn2.pages.dev" in deployment_doc
     assert "VITE_API_BASE_URL=https://quantlab-api-t4cv.onrender.com" in deployment_doc
