@@ -1,4 +1,4 @@
-﻿from pathlib import Path
+from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MAIN_JS = PROJECT_ROOT / "frontend" / "src" / "main.js"
@@ -21,11 +21,17 @@ def test_homepage_copy_is_product_facing_not_implementation_facing():
     ]
     for phrase in forbidden_visible_phrases:
         assert phrase not in content
-    assert "智能量化回测平台" in content
-    assert "从策略构想到研究报告" in content
-    assert "研究对象建立、策略验证、风险评估与成果展示" in content
-    assert "生成研究视图" in content
-    assert "开始研究" in content
+    expected_value_copy = [
+        "把交易想法",
+        "变成可验证的研究结论",
+        "无需注册",
+        "A 股、美股或 ETF",
+        "不是只给一个收益数字，而是给完整证据链",
+        "生成研究视图",
+        "免费开始研究",
+    ]
+    for phrase in expected_value_copy:
+        assert phrase in content
 
 
 def test_homepage_header_does_not_show_product_label_or_market_date():
@@ -71,3 +77,17 @@ def test_research_page_supports_click_to_select_symbols():
     for text in expected:
         assert text in content
 
+
+
+
+def test_homepage_has_share_and_search_metadata():
+    index_html = (PROJECT_ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    expected = [
+        'name="description"',
+        'property="og:title"',
+        'property="og:description"',
+        'rel="icon"',
+        "在线量化研究与策略回测",
+    ]
+    for marker in expected:
+        assert marker in index_html
