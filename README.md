@@ -8,7 +8,7 @@ QuantLab 是一套面向企业内部投研、策略验证和量化实验管理�
 
 | 模块 | 地址 | 说明 |
 | --- | --- | --- |
-| Web 应用 | [https://quantlab.aihzcc.top](https://quantlab.aihzcc.top) | 直接访问即可体验量化研究、回测分析、参数优化和报告导出流程 |
+| Web 应用 | [https://quantlab-cn2.pages.dev](https://quantlab-cn2.pages.dev) | 直接访问即可体验量化研究、回测分析、参数优化和报告导出流程 |
 | 代码仓库 | [https://github.com/hhzz-svg/QuantLab](https://github.com/hhzz-svg/QuantLab) | 前后端源码与部署配置统一托管 |
 
 面向普通访问者只需要打开 Web 应用；后端部署、环境变量和健康检查方式统一放在 [`docs/07-部署说明.md`](docs/07-部署说明.md) 中维护。
@@ -38,7 +38,7 @@ QuantLab 是一套面向企业内部投研、策略验证和量化实验管理�
 ```text
 用户访问
   ↓
-Cloudflare Pages 前端（quantlab.aihzcc.top）
+Cloudflare Pages 前端（quantlab-cn2.pages.dev）
   ↓
 后端服务
   ↓

@@ -19,7 +19,9 @@ def test_backend_database_url_can_be_overridden_for_hosted_deployment():
 def test_render_deployment_config_documents_required_commands():
     render_yaml = (PROJECT_ROOT / "render.yaml").read_text(encoding="utf-8")
     deployment_doc = (PROJECT_ROOT / "docs" / "07-部署说明.md").read_text(encoding="utf-8")
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
     assert "uvicorn backend.main:app --host 0.0.0.0 --port $PORT" in render_yaml
     assert "pip install -r requirements.txt" in render_yaml
-    assert "api.quantlab.aihzcc.top" in deployment_doc
-    assert "VITE_API_BASE_URL=https://api.quantlab.aihzcc.top" in deployment_doc
+    assert "quantlab-cn2.pages.dev" in deployment_doc
+    assert "https://quantlab-cn2.pages.dev" in readme
+    assert "VITE_API_BASE_URL=https://quantlab-api-t4cv.onrender.com" in deployment_doc
