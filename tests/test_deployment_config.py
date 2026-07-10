@@ -8,6 +8,7 @@ def test_frontend_can_target_independent_api_domain():
     content = (PROJECT_ROOT / "frontend" / "src" / "main.js").read_text(encoding="utf-8")
     assert "VITE_API_BASE_URL" in content
     assert "apiUrl(url)" in content
+    assert "JSON.parse(text).detail" in content
     assert "apiUrl(`/api/backtests/${backtest.id}/report?format=${format}`)" in content
 
 

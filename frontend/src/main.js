@@ -140,7 +140,9 @@ api = async (url, options = {}) => {
     if (!response.ok) {
       const text = await response.text()
       if (isApi && [404, 405].includes(response.status)) return demoApi(url, options)
-      throw new Error(text)
+      let message = text
+      try { message = JSON.parse(text).detail || text } catch {}
+      throw new Error(message)
     }
     const contentType = response.headers.get('content-type') || ''
     if (isApi && !contentType.includes('application/json')) return demoApi(url, options)

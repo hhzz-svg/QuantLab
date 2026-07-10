@@ -59,3 +59,57 @@ def test_market_preview_api_returns_quote_and_chart_without_csv_upload(monkeypat
     assert payload["quote"]["change"] == 4
     assert round(payload["quote"]["change_pct"], 6) == round(4 / 105, 6)
     assert len(payload["chart"]) == 5
+
+
+def test_yfinance_uses_direct_chart_fallback_when_library_returns_no_data(monkeypatch):
+    import yfinance as yf
+
+    from backend.app.data import sources
+
+    monkeypatch.setattr(yf, "download", lambda *args, **kwargs: pd.DataFrame())
+    monkeypatch.setattr(sources, "_download_yahoo_chart", lambda *args: pd.DataFrame({
+        "date": pd.date_range("2026-01-01", periods=3, freq="D"),
+        "open": [100, 101, 102],
+        "high": [101, 102, 103],
+        "low": [99, 100, 101],
+        "close": [100, 102, 103],
+        "volume": [1000, 1100, 1200],
+        "adjusted_close": [100, 102, 103],
+    }))
+
+    frame = sources.YFinanceDataSource().load("AAPL", "stock", "2026-01-01", "2026-01-03")
+
+    assert len(frame) == 3
+    assert frame.iloc[-1]["close"] == 103
+    assert frame.iloc[-1]["source"] == "yfinance"
+
+
+def test_akshare_uses_sina_fallback_when_primary_connection_closes(monkeypatch):
+    import akshare as ak
+
+    from backend.app.data import sources
+
+    def disconnected(*args, **kwargs):
+        raise ConnectionError("remote end closed connection")
+
+    def sina_prices(symbol, start_date, end_date, adjust):
+        assert symbol == "sh600519"
+        return pd.DataFrame({
+            "date": pd.date_range("2026-01-01", periods=3, freq="D"),
+            "open": [100, 101, 102],
+            "high": [101, 102, 103],
+            "low": [99, 100, 101],
+            "close": [100, 102, 103],
+            "volume": [1000, 1100, 1200],
+        })
+
+    monkeypatch.setattr(ak, "stock_zh_a_hist", disconnected)
+    monkeypatch.setattr(ak, "stock_zh_a_daily", sina_prices)
+
+    frame = sources.AkShareDataSource().load("600519", "stock", "2026-01-01", "2026-01-03")
+
+    assert len(frame) == 3
+    assert frame.iloc[-1]["close"] == 103
+    assert frame.iloc[-1]["source"] == "akshare"
+    assert sources._sina_symbol("510300", "fund") == "sh510300"
+    assert sources._sina_symbol("300750", "stock") == "sz300750"
