@@ -25,7 +25,7 @@ echarts.registerTheme('quantlab-dark', {
 const chartOf = (id) => { const el = document.getElementById(id); return el ? (echarts.getInstanceByDom(el) || echarts.init(el, 'quantlab-dark')) : null }
 const NAV_ITEMS = [
   { id: 'home', label: '首页', icon: '<svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5.5 10v9.5h13V10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
-  { id: 'lab', label: '开始研究', icon: '<svg viewBox="0 0 24 24"><path d="M9.5 3h5M10 3v6l-5.2 8.5A2 2 0 0 0 6.5 21h11a2 2 0 0 0 1.7-3.1L14 9.5V3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
+  { id: 'lab', label: '研究工作台', icon: '<svg viewBox="0 0 24 24"><path d="M9.5 3h5M10 3v6l-5.2 8.5A2 2 0 0 0 6.5 21h11a2 2 0 0 0 1.7-3.1L14 9.5V3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
   { id: 'detail', label: '结果分析', icon: '<svg viewBox="0 0 24 24"><path d="M4 20V9m5.5 11V4M15 20v-7m5 7V7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>' },
   { id: 'strategies', label: '策略库', icon: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="4" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="4" y="13" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="13" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>' },
   { id: 'optimization', label: '参数优化', icon: '<svg viewBox="0 0 24 24"><path d="M5 8h10M5 16h4m8 0h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="17" cy="8" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="11" cy="16" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>' },
@@ -184,13 +184,13 @@ createApp({
     pageTitle() { return ({ home: '首页', lab: '策略研究工作台', detail: '回测结果分析', strategies: '策略库', optimization: '参数优化', history: '研究报告', data: '数据管理' })[this.page] || 'QuantLab' },
     currentStrategy() { return this.strategies.find(s => s.id === this.backtestForm.strategy_id) || this.strategies[0] },
     latestBacktest() { return this.backtests[0] },
-    pageKicker() { return '从策略到报告，完成一次可复盘的量化研究。' },
+    pageKicker() { return '量化策略研究、回测验证与报告管理' },
     dashboardMetrics() {
       return [
-        ['可用策略', `${this.strategies.length || 6} 种`],
-        ['覆盖标的', 'A股 / 美股 / ETF'],
-        ['研究输出', '图表 + 报告'],
-        ['体验门槛', '无需注册']
+        ['策略模板', `${this.strategies.length || 6} 类`],
+        ['市场范围', 'A股 / 美股 / ETF'],
+        ['分析维度', '收益 / 风险 / 交易'],
+        ['报告交付', 'HTML / Markdown']
       ]
     }
   },
@@ -397,43 +397,43 @@ createApp({
           <span class="nav-icon" v-html="item.icon"></span><span class="nav-label">{{ item.label }}</span>
         </button>
       </nav>
-      <button class="nav-cta" @click="switchPage('lab'); navOpen=false">开始研究</button>
+      <button class="nav-cta" @click="switchPage('lab'); navOpen=false">新建研究任务</button>
     </aside>
     <div class="main-area">
       <header class="topbar">
         <button class="menu-toggle" @click="navOpen=!navOpen" aria-label="菜单"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button>
         <div class="topbar-title"><p class="eyebrow">{{ pageKicker }}</p><h1>{{ pageTitle }}</h1></div>
-        <div class="status-pill">{{ status || '选择标的与策略，生成可复盘的研究结果。' }}</div>
+        <div class="status-pill">{{ status || '统一管理研究任务、回测结果与报告资产。' }}</div>
       </header>
       <main class="workspace">
 
       <section v-if="page==='home'" class="home-page">
         <div class="hero-panel product-hero">
           <div class="hero-copy">
-            <div class="hero-badge"><span></span>在线体验 · 无需注册</div>
-            <p class="eyebrow">QuantLab Research Platform</p>
-            <h2>把交易想法，<span class="accent-text">变成可验证的研究结论</span></h2>
-            <p class="hero-lead">选择 A 股、美股或 ETF，运行可解释的量化策略，检查收益、回撤与买卖点，并生成一份可以复盘的研究报告。</p>
+            <div class="hero-badge"><span></span>企业级量化研究工作台</div>
+            <p class="eyebrow">QuantLab Quantitative Research</p>
+            <h2>统一策略研究、<span class="accent-text">回测验证与报告管理</span></h2>
+            <p class="hero-lead">面向投研、产品与技术团队，整合市场数据、策略模板、风险分析、参数优化和研究报告，建立标准化、可追溯的量化研究流程。</p>
             <div class="hero-actions">
-              <button class="btn primary" @click="switchPage('lab')">免费开始研究 <span aria-hidden="true">→</span></button>
-              <button class="btn ghost" @click="runQuickBacktest">一键生成示例结果</button>
+              <button class="btn primary" @click="switchPage('lab')">进入研究工作台 <span aria-hidden="true">→</span></button>
+              <button class="btn ghost" @click="runQuickBacktest">查看标准回测示例</button>
             </div>
             <div class="hero-proof" aria-label="产品能力">
-              <span><b>无需代码</b><small>表单化策略验证</small></span>
-              <span><b>多市场</b><small>A股 · 美股 · ETF</small></span>
-              <span><b>可复盘</b><small>图表 · 指标 · 报告</small></span>
+              <span><b>标准化研究</b><small>统一任务、数据与参数</small></span>
+              <span><b>全链路分析</b><small>信号、收益、风险与交易</small></span>
+              <span><b>可审计输出</b><small>实验记录、图表与报告</small></span>
             </div>
           </div>
           <div class="product-window">
-            <div class="window-chrome"><span class="window-dots"><i></i><i></i><i></i></span><small>LIVE RESEARCH VIEW</small><b>{{ marketPreview?.symbol || 'AAPL' }}</b></div>
+            <div class="window-chrome"><span class="window-dots"><i></i><i></i><i></i></span><small>RESEARCH ANALYTICS</small><b>{{ marketPreview?.symbol || 'AAPL' }}</b></div>
             <div class="product-card">
-              <div class="product-card-top"><span>价格与研究区间</span><b>{{ marketPreview?.start || marketForm.start }} — {{ marketPreview?.end || marketForm.end }}</b></div>
+              <div class="product-card-top"><span>标的与研究区间</span><b>{{ marketPreview?.start || marketForm.start }} — {{ marketPreview?.end || marketForm.end }}</b></div>
               <div class="snapshot-price"><strong>{{ marketPreview ? money(marketPreview.quote.last_close) : '--' }}</strong><em :class="{up:(marketPreview?.quote?.change||0)>=0,down:(marketPreview?.quote?.change||0)<0}">{{ marketPreview ? signedPct(marketPreview.quote.change_pct) : '--' }}</em></div>
               <div id="marketChart" class="market-chart compact"></div>
               <div class="market-meta">
-                <span><small>样本记录</small><b>{{ marketPreview?.rows || '--' }}</b></span>
-                <span><small>数据方式</small><b>{{ sourceName(marketPreview?.source || 'auto') }}</b></span>
-                <span><small>下一步</small><b>运行策略回测</b></span>
+                <span><small>数据记录</small><b>{{ marketPreview?.rows || '--' }}</b></span>
+                <span><small>数据来源</small><b>{{ sourceName(marketPreview?.source || 'auto') }}</b></span>
+                <span><small>研究状态</small><b>待执行回测</b></span>
               </div>
             </div>
           </div>
@@ -441,41 +441,41 @@ createApp({
 
         <div class="quick-study card">
           <div class="quick-study-head">
-            <div><p class="eyebrow">Start a Study</p><h3>从一个熟悉的标的开始</h3><p>输入代码或选择示例，先生成研究视图，再决定是否运行完整回测。</p></div>
-            <span class="flow-label">选择标的 <i>→</i> 预览数据 <i>→</i> 运行回测</span>
+            <div><p class="eyebrow">Research Task</p><h3>创建量化研究任务</h3><p>配置研究标的与资产类型，加载数据预览并执行标准化策略回测。</p></div>
+            <span class="flow-label">研究对象 · 数据区间 · 策略参数 · 风险指标</span>
           </div>
           <div class="quick-form">
             <label class="sr-only" for="home-symbol">标的代码</label>
             <input id="home-symbol" v-model="marketForm.symbol" placeholder="输入 AAPL / 600519 / 510300" aria-label="标的代码">
             <select v-model="marketForm.asset_type" aria-label="资产类型"><option value="stock">股票</option><option value="fund">基金</option><option value="index">指数</option></select>
-            <button class="btn primary" @click="previewMarket">生成研究视图</button>
-            <button class="btn ghost" @click="runQuickBacktest">直接运行回测</button>
+            <button class="btn primary" @click="previewMarket">加载数据预览</button>
+            <button class="btn ghost" @click="runQuickBacktest">执行标准回测</button>
           </div>
-          <div class="chips"><span>快速示例</span><button @click="applyPreset('AAPL')">Apple · AAPL</button><button @click="applyPreset('MSFT')">Microsoft · MSFT</button><button @click="applyPreset('600519')">贵州茅台 · 600519</button><button @click="applyPreset('510300','fund')">沪深300 ETF</button></div>
+          <div class="chips"><span>常用研究对象</span><button @click="applyPreset('AAPL')">Apple · AAPL</button><button @click="applyPreset('MSFT')">Microsoft · MSFT</button><button @click="applyPreset('600519')">贵州茅台 · 600519</button><button @click="applyPreset('510300','fund')">沪深300 ETF</button></div>
         </div>
 
-        <div class="section-heading"><div><p class="eyebrow">Research workflow</p><h2>不是只给一个收益数字，而是给完整证据链</h2></div><button class="text-link" @click="switchPage('strategies')">查看全部策略 <span>→</span></button></div>
+        <div class="section-heading"><div><p class="eyebrow">Research Governance</p><h2>标准化研究流程，形成可追溯的策略证据链</h2></div><button class="text-link" @click="switchPage('strategies')">浏览策略模板 <span>→</span></button></div>
         <div class="value-grid research-flow">
-          <article class="value-card"><span>01 / DEFINE</span><div class="value-icon">⌁</div><h3>选择研究对象</h3><p>从常用股票和 ETF 快速开始，也可以输入自己的标的与研究区间。</p></article>
-          <article class="value-card"><span>02 / TEST</span><div class="value-icon">↗</div><h3>运行可解释策略</h3><p>使用均线、RSI、MACD、布林带、定投和动量策略验证交易想法。</p></article>
-          <article class="value-card"><span>03 / VERIFY</span><div class="value-icon">◫</div><h3>检查收益与风险</h3><p>同时查看权益、回撤、买卖点、月度表现和基准对比，避免只看最终收益。</p></article>
-          <article class="value-card"><span>04 / REPORT</span><div class="value-icon">✓</div><h3>沉淀研究报告</h3><p>保存历史实验并导出 HTML 或 Markdown 报告，让每次策略判断都能复盘。</p></article>
+          <article class="value-card"><span>01 / DEFINE</span><div class="value-icon">⌁</div><h3>定义研究任务</h3><p>明确研究标的、资产类型、数据区间与研究假设，统一任务输入。</p></article>
+          <article class="value-card"><span>02 / BACKTEST</span><div class="value-icon">↗</div><h3>执行策略回测</h3><p>选择策略模板并配置参数，生成信号、交易记录和权益曲线。</p></article>
+          <article class="value-card"><span>03 / ANALYZE</span><div class="value-icon">◫</div><h3>评估收益与风险</h3><p>统一分析总收益、最大回撤、交易表现、月度收益与基准差异。</p></article>
+          <article class="value-card"><span>04 / ARCHIVE</span><div class="value-icon">✓</div><h3>归档研究成果</h3><p>保存实验配置与结果，导出 HTML 或 Markdown 报告，形成研究资产。</p></article>
         </div>
 
         <div class="strategy-preview card">
-          <div class="section-heading compact"><div><p class="eyebrow">Popular starting points</p><h2>从经典策略开始，不必从空白页开始</h2></div><p>先理解信号，再调整参数，最后比较风险收益表现。</p></div>
+          <div class="section-heading compact"><div><p class="eyebrow">Strategy Library</p><h2>内置策略模板，支持标准验证与参数实验</h2></div><p>覆盖趋势跟踪、动量与均值回归等常见量化研究范式。</p></div>
           <div class="strategy-preview-grid">
             <article class="strategy-preview-card" v-for="(strategy,index) in strategies.slice(0,3)" :key="strategy.id">
               <div><span>0{{ index + 1 }}</span><b>{{ strategy.name }}</b></div>
               <p>{{ strategy.description }}</p>
               <small>{{ strategy.scenario }}</small>
-              <button @click="backtestForm.strategy_id=strategy.id; resetStrategyParams(); switchPage('lab')">用这个策略开始 <span>→</span></button>
+              <button @click="backtestForm.strategy_id=strategy.id; resetStrategyParams(); switchPage('lab')">基于此策略创建任务 <span>→</span></button>
             </article>
           </div>
         </div>
 
         <div class="metric-strip"><div v-for="m in dashboardMetrics" class="glass-metric"><span>{{m[0]}}</span><b>{{m[1]}}</b></div></div>
-        <div class="closing-cta"><div><p class="eyebrow">Ready when you are</p><h2>下一次策略判断，先用数据验证。</h2><p>QuantLab 用于研究和策略验证，不构成投资建议，也不承诺任何收益。</p></div><button class="btn primary" @click="switchPage('lab')">进入策略研究工作台 <span>→</span></button></div>
+        <div class="closing-cta"><div><p class="eyebrow">QuantLab Research Workspace</p><h2>建立统一、可复盘的量化研究流程。</h2><p>适用于策略研究、方案评审与结果归档；不构成投资建议，也不承诺任何收益。</p></div><button class="btn primary" @click="switchPage('lab')">新建研究任务 <span>→</span></button></div>
       </section>
 
       <section v-if="page==='lab'" class="card lab-card"><h2>策略研究工作台</h2><p class="muted">可以直接点选常用研究标的，也可以手动输入代码；选择策略和参数后，系统会自动完成数据准备、交易模拟和风险收益分析。</p><div class="preset-picker"><div><b>常用研究标的</b><p>点击卡片即可自动填入标的，不用先记股票代码。</p></div><div class="preset-symbol-grid"><button v-for="item in presetSymbols" :key="item.symbol" class="symbol-card" :class="{selected: backtestForm.symbol===item.symbol}" @click="chooseResearchSymbol(item)"><span>{{item.market}}</span><strong>{{item.name}}</strong><em>{{item.symbol}}</em></button></div></div><div class="form-grid"><label>标的代码（可手动修改）<input v-model="backtestForm.symbol"></label><label>资产类型<select v-model="backtestForm.asset_type"><option value="stock">股票</option><option value="fund">基金</option><option value="index">指数</option></select></label><label>数据方式<select v-model="backtestForm.data_source"><option value="auto">智能选择</option><option value="yfinance">国际市场</option><option value="akshare">A股市场</option><option value="csv">示例数据</option></select></label><label>开始<input type="date" v-model="backtestForm.start"></label><label>结束<input type="date" v-model="backtestForm.end"></label><label>初始资金<input type="number" v-model="backtestForm.cash"></label><label>手续费<input type="number" step="0.0001" v-model="backtestForm.fee"></label><label>滑点<input type="number" step="0.0001" v-model="backtestForm.slippage"></label><label>策略<select v-model="backtestForm.strategy_id" @change="resetStrategyParams"><option v-for="s in strategies" :value="s.id">{{s.name}}</option></select></label><label v-for="p in currentStrategy?.parameters" :key="p.name">{{p.label}}<input type="number" :step="p.step || 1" v-model="backtestForm.strategy_params[p.name]"></label></div><div class="actions"><button class="btn primary" @click="runBacktest">运行回测</button><button class="btn ghost" @click="previewMarket">预览研究对象</button></div></section>

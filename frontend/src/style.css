@@ -369,11 +369,11 @@ body {
 .accent-text { display: block; color: transparent; background: linear-gradient(100deg, var(--accent), #b6ffe7 42%, var(--accent-2)); background-clip: text; -webkit-background-clip: text; }
 .hero-lead { max-width: 680px; font-size: 18px; line-height: 1.82; }
 .hero-actions .btn { min-height: 48px; padding-inline: 20px; }
-.hero-proof { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-top: 32px; max-width: 680px; }
-.hero-proof > span { display: grid; gap: 4px; padding-left: 13px; border-left: 1px solid var(--line-strong); }
+.hero-proof { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-top: 32px; max-width: 740px; }
+.hero-proof > span { display: grid; gap: 5px; padding: 14px 15px; border: 1px solid var(--line); border-radius: 12px; background: rgba(8,17,31,.48); }
 .hero-proof b { color: var(--ink); font-size: 14px; }
 .hero-proof small { color: var(--muted); font-size: 12px; }
-.product-window { overflow: hidden; border: 1px solid rgba(148,163,184,.24); border-radius: 20px; background: rgba(5,13,25,.82); box-shadow: 0 30px 80px rgba(0,0,0,.4); transform: rotate(.5deg); }
+.product-window { overflow: hidden; border: 1px solid rgba(148,163,184,.24); border-radius: 18px; background: rgba(5,13,25,.82); box-shadow: 0 30px 80px rgba(0,0,0,.4); }
 .window-chrome { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 42px; padding: 0 15px; border-bottom: 1px solid var(--line); color: var(--muted); background: rgba(19,27,46,.9); }
 .window-chrome small { font: 800 10px/1 var(--font-mono); letter-spacing: .12em; }
 .window-chrome > b { justify-self: end; color: var(--accent); font: 850 12px/1 var(--font-mono); }
@@ -391,7 +391,7 @@ body {
 .market-meta small, .market-meta b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .market-meta small { color: var(--muted); font-size: 10px; }
 .market-meta b { margin-top: 5px; color: var(--ink-2); font-size: 11px; }
-.quick-study { gap: 18px; border-color: rgba(100,244,199,.2); background: linear-gradient(120deg, rgba(19,27,46,.94), rgba(10,25,37,.92)); }
+.quick-study { gap: 18px; border-color: var(--line-strong); background: linear-gradient(120deg, rgba(19,27,46,.96), rgba(10,20,35,.94)); }
 .quick-study-head, .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 22px; }
 .quick-study-head h3 { font-size: 27px; }
 .quick-study-head p:not(.eyebrow), .section-heading > p { margin: 8px 0 0; color: var(--muted); line-height: 1.7; }

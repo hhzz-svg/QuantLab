@@ -4,31 +4,36 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MAIN_JS = PROJECT_ROOT / "frontend" / "src" / "main.js"
 
 
-def test_homepage_copy_is_product_facing_not_implementation_facing():
+def test_homepage_copy_is_enterprise_product_facing():
     content = MAIN_JS.read_text(encoding="utf-8")
     forbidden_visible_phrases = [
-        "不用上传" + " CSV",
-        "联网行情" + "终端",
-        "默认" + "联网",
-        "CSV 仅作兜底",
-        "直接联网看股票",
+        "把交易想法",
+        "变成可验证的研究结论",
+        "免费开始研究",
+        "一键生成示例结果",
+        "从一个熟悉的标的开始",
+        "先生成研究视图",
+        "Ready when you are",
+        "下一次策略判断",
+        "用这个策略开始",
+        "无需注册",
         "MARKET OVERVIEW",
         "Research Snapshot",
-        "查看行情",
-        "先看行情",
         ">yfinance<",
         "AKShare",
     ]
     for phrase in forbidden_visible_phrases:
         assert phrase not in content
     expected_value_copy = [
-        "把交易想法",
-        "变成可验证的研究结论",
-        "无需注册",
-        "A 股、美股或 ETF",
-        "不是只给一个收益数字，而是给完整证据链",
-        "生成研究视图",
-        "免费开始研究",
+        "企业级量化研究工作台",
+        "统一策略研究",
+        "回测验证与报告管理",
+        "面向投研、产品与技术团队",
+        "创建量化研究任务",
+        "标准化研究流程",
+        "可追溯的策略证据链",
+        "内置策略模板",
+        "新建研究任务",
     ]
     for phrase in expected_value_copy:
         assert phrase in content
@@ -45,7 +50,8 @@ def test_homepage_header_does_not_show_product_label_or_market_date():
     for phrase in forbidden_header_phrases:
         assert phrase not in content
     assert "首页" in content
-    assert "从策略到报告，完成一次可复盘的量化研究。" in content
+    assert "量化策略研究、回测验证与报告管理" in content
+    assert "统一管理研究任务、回测结果与报告资产。" in content
 
 
 def test_strategy_library_has_detailed_research_explanations():
@@ -87,7 +93,7 @@ def test_homepage_has_share_and_search_metadata():
         'property="og:title"',
         'property="og:description"',
         'rel="icon"',
-        "在线量化研究与策略回测",
+        "量化策略研究、回测与报告管理平台",
     ]
     for marker in expected:
         assert marker in index_html
