@@ -18,6 +18,21 @@
           <a href="#templates">策略模板</a>
           <a href="#deliverable">研究成果</a>
         </nav>
+        <button
+          class="btn btn-ghost btn-icon theme-toggle"
+          type="button"
+          :aria-label="`界面主题，当前${themeLabel()}，点击切换`"
+          :title="`切换到${preferences.theme === 'light' ? '深色' : '浅色'}主题`"
+          @click="toggleTheme"
+        >
+          <svg v-if="preferences.theme === 'light'" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" stroke-linejoin="round" />
+          </svg>
+          <svg v-else viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6l1.4 1.4m10 10 1.4 1.4m0-12.8-1.4 1.4m-10 10-1.4 1.4" stroke-linecap="round" />
+          </svg>
+        </button>
         <button class="btn btn-primary btn-sm" type="button" @click="actions.switchPage('lab')">
           进入研究工作台
         </button>
@@ -62,6 +77,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { actions, isDemo, isWaking, state } from './store.js'
+import { preferences, themeLabel, toggleTheme } from './preferences.js'
 import AppSidebar from './components/AppSidebar.vue'
 import AppTopbar from './components/AppTopbar.vue'
 import SiteFooter from './components/SiteFooter.vue'
@@ -90,7 +106,7 @@ onMounted(() => actions.boot())
   position: sticky;
   top: 0;
   z-index: 30;
-  background: rgba(10, 14, 21, 0.86);
+  background: var(--header-bg);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
 }
@@ -137,6 +153,13 @@ onMounted(() => actions.boot())
 .portal-links a:hover {
   color: var(--text-primary);
 }
+.theme-toggle {
+  flex: none;
+  color: var(--text-secondary);
+}
+.theme-toggle:hover {
+  color: var(--text-primary);
+}
 
 /* ---------- 工作台 ---------- */
 .console {
@@ -172,7 +195,7 @@ onMounted(() => actions.boot())
     position: fixed;
     inset: 0;
     z-index: 35;
-    background: rgba(4, 7, 12, 0.6);
+    background: var(--scrim);
   }
   .portal-links {
     display: none;

@@ -16,6 +16,7 @@ import {
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { pct, price as fmtPrice, money } from './format.js'
+import { themeVersion } from './preferences.js'
 
 echarts.use([
   LineChart,
@@ -42,18 +43,30 @@ export const cssVar = (name, fallback = '') => {
   return value || fallback
 }
 
-export const chartColors = () => ({
-  primary: cssVar('--chart-primary', '#3d7df6'),
-  benchmark: cssVar('--chart-benchmark', '#7b8798'),
-  grid: cssVar('--chart-grid', 'rgba(255,255,255,.06)'),
-  axis: cssVar('--chart-axis', '#6c7889'),
-  gain: cssVar('--gain', '#f04e4e'),
-  loss: cssVar('--loss', '#22a875'),
-  text: cssVar('--text-primary', '#e7ecf5'),
-  textSecondary: cssVar('--text-secondary', '#9da8ba'),
-  surface: cssVar('--bg-surface', '#121824'),
-  border: cssVar('--border-strong', 'rgba(255,255,255,.145)')
-})
+export const chartColors = () => {
+  /* 建立响应式依赖：主题或涨跌配色变化后，
+     调用方的 computed 会重新求值，图表随之换色 */
+  void themeVersion.value
+  return {
+    primary: cssVar('--chart-primary', '#2a63d6'),
+    benchmark: cssVar('--chart-benchmark', '#8a94a6'),
+    grid: cssVar('--chart-grid', 'rgba(15,23,42,.08)'),
+    axis: cssVar('--chart-axis', '#646e7e'),
+    gain: cssVar('--gain', '#d32b2b'),
+    loss: cssVar('--loss', '#0e7a54'),
+    text: cssVar('--text-primary', '#0f172a'),
+    textSecondary: cssVar('--text-secondary', '#4b5769'),
+    surface: cssVar('--bg-surface', '#ffffff'),
+    border: cssVar('--border-strong', 'rgba(15,23,42,.2)'),
+    tooltipBg: cssVar('--chart-tooltip-bg', 'rgba(255,255,255,.97)'),
+    tooltipText: cssVar('--chart-tooltip-text', '#0f172a'),
+    zoomBg: cssVar('--chart-zoom-bg', 'rgba(15,23,42,.03)'),
+    zoomHandle: cssVar('--chart-zoom-handle', 'rgba(15,23,42,.18)'),
+    zoomShadow: cssVar('--chart-zoom-shadow', 'rgba(15,23,42,.05)'),
+    markerBorder: cssVar('--chart-marker-border', 'rgba(255,255,255,.85)'),
+    tooltipShadow: cssVar('--shadow-md', '0 10px 28px rgba(15,23,42,.12)')
+  }
+}
 
 /** 所有图表共享的基线配置 */
 const base = () => {
@@ -64,11 +77,12 @@ const base = () => {
     textStyle: { fontFamily: 'inherit', color: c.textSecondary },
     tooltip: {
       trigger: 'axis',
-      backgroundColor: 'rgba(10,14,21,.95)',
+      backgroundColor: c.tooltipBg,
       borderColor: c.border,
       borderWidth: 1,
       padding: [8, 11],
-      textStyle: { color: c.text, fontSize: 12 },
+      extraCssText: `box-shadow: ${c.tooltipShadow};`,
+      textStyle: { color: c.tooltipText, fontSize: 12 },
       axisPointer: {
         type: 'cross',
         lineStyle: { color: c.axis, width: 1, type: 'dashed' },
@@ -116,30 +130,33 @@ const percentAxis = (extra = {}) =>
     ...extra
   })
 
-const zoom = (start = 0) => [
-  { type: 'inside', start, end: 100, zoomOnMouseWheel: true, moveOnMouseMove: true },
-  {
-    type: 'slider',
-    start,
-    end: 100,
-    height: 18,
-    bottom: 0,
-    borderColor: 'transparent',
-    backgroundColor: 'rgba(255,255,255,.03)',
-    fillerColor: 'rgba(61,125,246,.14)',
-    handleStyle: { color: chartColors().primary, borderColor: 'transparent' },
-    moveHandleStyle: { color: 'rgba(61,125,246,.3)' },
-    dataBackground: {
-      lineStyle: { color: 'rgba(255,255,255,.16)' },
-      areaStyle: { color: 'rgba(255,255,255,.05)' }
-    },
-    selectedDataBackground: {
-      lineStyle: { color: chartColors().primary },
-      areaStyle: { color: 'rgba(61,125,246,.12)' }
-    },
-    textStyle: { color: chartColors().axis, fontSize: 10 }
-  }
-]
+const zoom = (start = 0) => {
+  const c = chartColors()
+  return [
+    { type: 'inside', start, end: 100, zoomOnMouseWheel: true, moveOnMouseMove: true },
+    {
+      type: 'slider',
+      start,
+      end: 100,
+      height: 18,
+      bottom: 0,
+      borderColor: 'transparent',
+      backgroundColor: c.zoomBg,
+      fillerColor: rgba(c.primary, 0.14),
+      handleStyle: { color: c.primary, borderColor: 'transparent' },
+      moveHandleStyle: { color: rgba(c.primary, 0.3) },
+      dataBackground: {
+        lineStyle: { color: c.zoomHandle },
+        areaStyle: { color: c.zoomShadow }
+      },
+      selectedDataBackground: {
+        lineStyle: { color: c.primary },
+        areaStyle: { color: rgba(c.primary, 0.12) }
+      },
+      textStyle: { color: c.axis, fontSize: 10 }
+    }
+  ]
+}
 
 /** 十六进制转 rgba，用于渐变填充 */
 const rgba = (hex, alpha) => {
@@ -217,7 +234,7 @@ export const buildPriceOption = (priceSeries = []) => {
       symbol,
       symbolSize: 11,
       symbolOffset: symbol === 'triangle' ? [0, -10] : [0, 10],
-      itemStyle: { color, borderColor: 'rgba(0,0,0,.35)', borderWidth: 1 },
+      itemStyle: { color, borderColor: c.markerBorder, borderWidth: 1 },
       label: { show: false }
     }))
   return {
@@ -420,7 +437,7 @@ export const buildOptimizationOption = (items = []) => {
         itemStyle: {
           color: (p) => (p.data.rank === 1 ? c.gain : c.primary),
           opacity: 0.9,
-          borderColor: 'rgba(0,0,0,.3)',
+          borderColor: c.markerBorder,
           borderWidth: 1
         }
       }

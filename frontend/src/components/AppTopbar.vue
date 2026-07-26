@@ -47,7 +47,7 @@ import { DEFAULT_STATUS, PAGE_TITLES, isDemo, isWaking, state } from '../store.j
   gap: var(--sp-4);
   min-height: var(--topbar-h);
   padding: var(--sp-2) var(--sp-6);
-  background: rgba(10, 14, 21, 0.86);
+  background: var(--header-bg);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
 }

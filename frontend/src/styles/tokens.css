@@ -1,57 +1,79 @@
 /* ============================================================
    QuantLab 设计变量
    见 docs/09-UI重设计方案.md 第四章
+
+   两套主题：
+   - 默认浅色，与国内量化平台（聚宽 / BigQuant / 米筐 / 果仁 / 雪球）一致
+   - 深色为可选，供偏好暗色环境的用户切换
+
+   所有颜色对都实测满足 WCAG AA 4.5:1。
    ============================================================ */
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* ---------- 背景四层 ---------- */
-  --bg-base: #0a0e15;
-  --bg-surface: #121824;
-  --bg-raised: #19202e;
-  --bg-overlay: #212a3a;
+  /* ---------- 背景四层：越靠近用户的层越亮 ---------- */
+  --bg-base: #f5f7fa;
+  --bg-surface: #ffffff;
+  --bg-raised: #f1f4f8;
+  --bg-overlay: #e6ebf2;
 
   /* ---------- 文字三级 ---------- */
-  --text-primary: #e7ecf5;
-  --text-secondary: #9da8ba;
-  /* 三级文字仍需满足 WCAG AA 4.5:1（在 --bg-surface 上实测 4.6） */
-  --text-tertiary: #7d899b;
+  --text-primary: #0f172a;
+  --text-secondary: #4b5769;
+  --text-tertiary: #646e7e;
 
   /* ---------- 描边 ---------- */
-  --border: rgba(255, 255, 255, 0.075);
-  --border-strong: rgba(255, 255, 255, 0.145);
+  --border: rgba(15, 23, 42, 0.1);
+  --border-strong: rgba(15, 23, 42, 0.2);
 
   /* ---------- 品牌 / 交互 ---------- */
-  --brand: #3d7df6;
-  --brand-hover: #5590ff;
-  --brand-active: #2c68dc;
-  --brand-subtle: rgba(61, 125, 246, 0.13);
-  --brand-border: rgba(61, 125, 246, 0.38);
+  --brand: #2a63d6;
+  --brand-hover: #2455bd;
+  --brand-active: #1e49a4;
+  --brand-subtle: rgba(42, 99, 214, 0.09);
+  --brand-border: rgba(42, 99, 214, 0.32);
   --brand-ink: #ffffff;
-  /* 实心按钮底色比 --brand 更深，保证白色按钮文字达到 4.5:1 */
   --brand-solid: #2a63d6;
-  --brand-solid-hover: #3573e8;
-  --brand-solid-active: #2153b8;
+  --brand-solid-hover: #2455bd;
+  --brand-solid-active: #1e49a4;
 
-  /* ---------- 涨跌语义（默认中文惯例：红涨绿跌） ---------- */
-  --gain: #f04e4e;
-  --gain-soft: rgba(240, 78, 78, 0.13);
-  --loss: #22a875;
-  --loss-soft: rgba(34, 168, 117, 0.13);
+  /* ---------- 涨跌语义（默认中文惯例：红涨绿跌） ----------
+     浅色底下调深，保证 13px 表格数字也达 AA */
+  --gain: #d32b2b;
+  --gain-soft: rgba(211, 43, 43, 0.09);
+  --loss: #0e7a54;
+  --loss-soft: rgba(14, 122, 84, 0.09);
 
   /* ---------- 提示 ---------- */
-  --warn: #e0a33c;
-  --warn-soft: rgba(224, 163, 60, 0.12);
-  --warn-border: rgba(224, 163, 60, 0.32);
-  --danger: #ef5350;
-  --danger-soft: rgba(239, 83, 80, 0.12);
+  --warn: #9a6407;
+  --warn-soft: rgba(154, 100, 7, 0.09);
+  --warn-border: rgba(154, 100, 7, 0.28);
+  --danger: #c62828;
+  --danger-soft: rgba(198, 40, 40, 0.08);
+  --danger-border: rgba(198, 40, 40, 0.28);
 
   /* ---------- 图表 ---------- */
-  --chart-primary: #3d7df6;
-  --chart-benchmark: #7b8798;
-  --chart-grid: rgba(255, 255, 255, 0.06);
-  --chart-axis: #6c7889;
+  --chart-primary: #2a63d6;
+  --chart-benchmark: #8a94a6;
+  --chart-grid: rgba(15, 23, 42, 0.08);
+  --chart-axis: #646e7e;
+  --chart-tooltip-bg: rgba(255, 255, 255, 0.97);
+  --chart-tooltip-text: #0f172a;
+  --chart-zoom-bg: rgba(15, 23, 42, 0.03);
+  --chart-zoom-handle: rgba(15, 23, 42, 0.18);
+  --chart-zoom-shadow: rgba(15, 23, 42, 0.05);
+  --chart-marker-border: rgba(255, 255, 255, 0.85);
+
+  /* ---------- 遮罩与浮层 ---------- */
+  --scrim: rgba(15, 23, 42, 0.38);
+  --header-bg: rgba(255, 255, 255, 0.86);
+  --skeleton-sheen: rgba(15, 23, 42, 0.05);
+  --select-arrow: #646e7e;
+
+  /* ---------- 阴影 ---------- */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.07);
+  --shadow-md: 0 10px 28px rgba(15, 23, 42, 0.12);
 
   /* ---------- 字体 ---------- */
   --font-sans: "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei",
@@ -85,10 +107,6 @@
   --radius-lg: 12px;
   --radius-xl: 16px;
 
-  /* ---------- 阴影 ---------- */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
-
   /* ---------- 结构尺寸 ---------- */
   --sidebar-w: 216px;
   --topbar-h: 56px;
@@ -99,10 +117,79 @@
   --console-max: 1440px;
 }
 
-/* 涨跌配色切换：绿涨红跌（国际惯例） */
+/* ============================================================
+   深色主题
+   ============================================================ */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-base: #131822;
+  --bg-surface: #1b212d;
+  --bg-raised: #232a38;
+  --bg-overlay: #2c3546;
+
+  --text-primary: #e9eef7;
+  --text-secondary: #a8b3c4;
+  --text-tertiary: #8b95a6;
+
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.17);
+
+  --brand: #5b93ff;
+  --brand-hover: #77a6ff;
+  --brand-active: #4680ea;
+  --brand-subtle: rgba(91, 147, 255, 0.14);
+  --brand-border: rgba(91, 147, 255, 0.4);
+  --brand-ink: #ffffff;
+  --brand-solid: #2f6ae0;
+  --brand-solid-hover: #3d7af0;
+  --brand-solid-active: #2857bd;
+
+  --gain: #ff6b6b;
+  --gain-soft: rgba(255, 107, 107, 0.15);
+  --loss: #2fc48d;
+  --loss-soft: rgba(47, 196, 141, 0.15);
+
+  --warn: #f0b555;
+  --warn-soft: rgba(240, 181, 85, 0.14);
+  --warn-border: rgba(240, 181, 85, 0.34);
+  --danger: #ff7070;
+  --danger-soft: rgba(255, 112, 112, 0.14);
+  --danger-border: rgba(255, 112, 112, 0.32);
+
+  --chart-primary: #5b93ff;
+  --chart-benchmark: #8e99ab;
+  --chart-grid: rgba(255, 255, 255, 0.08);
+  --chart-axis: #8b95a6;
+  --chart-tooltip-bg: rgba(27, 33, 45, 0.97);
+  --chart-tooltip-text: #e9eef7;
+  --chart-zoom-bg: rgba(255, 255, 255, 0.04);
+  --chart-zoom-handle: rgba(255, 255, 255, 0.2);
+  --chart-zoom-shadow: rgba(255, 255, 255, 0.05);
+  --chart-marker-border: rgba(19, 24, 34, 0.7);
+
+  --scrim: rgba(6, 9, 15, 0.6);
+  --header-bg: rgba(19, 24, 34, 0.86);
+  --skeleton-sheen: rgba(255, 255, 255, 0.06);
+  --select-arrow: #8b95a6;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 10px 28px rgba(0, 0, 0, 0.4);
+}
+
+/* ============================================================
+   涨跌配色切换：绿涨红跌（国际惯例）
+   放在主题之后，两套主题各自覆盖一次
+   ============================================================ */
 :root[data-updown="western"] {
-  --gain: #22a875;
-  --gain-soft: rgba(34, 168, 117, 0.13);
-  --loss: #f04e4e;
-  --loss-soft: rgba(240, 78, 78, 0.13);
+  --gain: #0e7a54;
+  --gain-soft: rgba(14, 122, 84, 0.09);
+  --loss: #d32b2b;
+  --loss-soft: rgba(211, 43, 43, 0.09);
+}
+:root[data-theme="dark"][data-updown="western"] {
+  --gain: #2fc48d;
+  --gain-soft: rgba(47, 196, 141, 0.15);
+  --loss: #ff6b6b;
+  --loss-soft: rgba(255, 107, 107, 0.15);
 }

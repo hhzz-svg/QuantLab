@@ -35,7 +35,21 @@
     </nav>
 
     <div class="side-foot">
-      <button class="updown-toggle" type="button" @click="toggleUpdown">
+      <button
+        class="pref-toggle"
+        type="button"
+        :aria-label="`界面主题，当前${themeLabel()}，点击切换`"
+        @click="toggleTheme"
+      >
+        <span class="grow truncate">界面主题</span>
+        <span class="badge badge-neutral">{{ themeLabel() }}</span>
+      </button>
+      <button
+        class="pref-toggle"
+        type="button"
+        :aria-label="`涨跌配色，当前${updownLabel()}，点击切换`"
+        @click="toggleUpdown"
+      >
         <span class="grow truncate">涨跌配色</span>
         <span class="badge badge-neutral">{{ updownLabel() }}</span>
       </button>
@@ -48,7 +62,7 @@
 
 <script setup>
 import { NAV_GROUPS, actions, state } from '../store.js'
-import { toggleUpdown, updownLabel } from '../preferences.js'
+import { themeLabel, toggleTheme, toggleUpdown, updownLabel } from '../preferences.js'
 </script>
 
 <style scoped>
@@ -172,7 +186,7 @@ import { toggleUpdown, updownLabel } from '../preferences.js'
   margin-top: var(--sp-3);
   border-top: 1px solid var(--border);
 }
-.updown-toggle {
+.pref-toggle {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
@@ -184,7 +198,7 @@ import { toggleUpdown, updownLabel } from '../preferences.js'
   color: var(--text-secondary);
   font-size: var(--fs-caption);
 }
-.updown-toggle:hover {
+.pref-toggle:hover {
   color: var(--text-primary);
   background: var(--bg-raised);
 }

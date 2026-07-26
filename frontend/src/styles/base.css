@@ -86,7 +86,7 @@ svg {
 }
 
 ::selection {
-  color: #fff;
+  color: var(--brand-ink);
   background: var(--brand-active);
 }
 
