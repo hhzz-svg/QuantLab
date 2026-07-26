@@ -1,0 +1,108 @@
+/* ============================================================
+   QuantLab 设计变量
+   见 docs/09-UI重设计方案.md 第四章
+   ============================================================ */
+
+:root {
+  color-scheme: dark;
+
+  /* ---------- 背景四层 ---------- */
+  --bg-base: #0a0e15;
+  --bg-surface: #121824;
+  --bg-raised: #19202e;
+  --bg-overlay: #212a3a;
+
+  /* ---------- 文字三级 ---------- */
+  --text-primary: #e7ecf5;
+  --text-secondary: #9da8ba;
+  /* 三级文字仍需满足 WCAG AA 4.5:1（在 --bg-surface 上实测 4.6） */
+  --text-tertiary: #7d899b;
+
+  /* ---------- 描边 ---------- */
+  --border: rgba(255, 255, 255, 0.075);
+  --border-strong: rgba(255, 255, 255, 0.145);
+
+  /* ---------- 品牌 / 交互 ---------- */
+  --brand: #3d7df6;
+  --brand-hover: #5590ff;
+  --brand-active: #2c68dc;
+  --brand-subtle: rgba(61, 125, 246, 0.13);
+  --brand-border: rgba(61, 125, 246, 0.38);
+  --brand-ink: #ffffff;
+  /* 实心按钮底色比 --brand 更深，保证白色按钮文字达到 4.5:1 */
+  --brand-solid: #2a63d6;
+  --brand-solid-hover: #3573e8;
+  --brand-solid-active: #2153b8;
+
+  /* ---------- 涨跌语义（默认中文惯例：红涨绿跌） ---------- */
+  --gain: #f04e4e;
+  --gain-soft: rgba(240, 78, 78, 0.13);
+  --loss: #22a875;
+  --loss-soft: rgba(34, 168, 117, 0.13);
+
+  /* ---------- 提示 ---------- */
+  --warn: #e0a33c;
+  --warn-soft: rgba(224, 163, 60, 0.12);
+  --warn-border: rgba(224, 163, 60, 0.32);
+  --danger: #ef5350;
+  --danger-soft: rgba(239, 83, 80, 0.12);
+
+  /* ---------- 图表 ---------- */
+  --chart-primary: #3d7df6;
+  --chart-benchmark: #7b8798;
+  --chart-grid: rgba(255, 255, 255, 0.06);
+  --chart-axis: #6c7889;
+
+  /* ---------- 字体 ---------- */
+  --font-sans: "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei",
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+
+  --fs-label: 11px;
+  --fs-caption: 12px;
+  --fs-table: 13px;
+  --fs-body: 14px;
+  --fs-lead: 16px;
+  --fs-h3: 17px;
+  --fs-h2: 22px;
+  --fs-h1: 28px;
+
+  /* ---------- 间距刻度 ---------- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+  --sp-8: 40px;
+  --sp-9: 56px;
+
+  /* ---------- 圆角 ---------- */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* ---------- 阴影 ---------- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+
+  /* ---------- 结构尺寸 ---------- */
+  --sidebar-w: 216px;
+  --topbar-h: 56px;
+  --control-h: 36px;
+  --control-h-sm: 30px;
+  --control-h-lg: 42px;
+  --portal-max: 1200px;
+  --console-max: 1440px;
+}
+
+/* 涨跌配色切换：绿涨红跌（国际惯例） */
+:root[data-updown="western"] {
+  --gain: #22a875;
+  --gain-soft: rgba(34, 168, 117, 0.13);
+  --loss: #f04e4e;
+  --loss-soft: rgba(240, 78, 78, 0.13);
+}

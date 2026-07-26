@@ -4,7 +4,22 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 WORKSPACE_ROOT = PROJECT_ROOT.parent
-MAIN_JS = PROJECT_ROOT / "frontend" / "src" / "main.js"
+FRONTEND_SRC = PROJECT_ROOT / "frontend" / "src"
+SOURCE_SUFFIXES = {".js", ".vue", ".css"}
+
+
+def frontend_source() -> str:
+    """拼接前端源码目录下所有源文件内容。
+
+    前端已从单个 main.js 拆分为多文件组件结构，因此按目录扫描，断言意图保持不变。
+    """
+    parts = [
+        path.read_text(encoding="utf-8")
+        for path in sorted(FRONTEND_SRC.rglob("*"))
+        if path.is_file() and path.suffix in SOURCE_SUFFIXES
+    ]
+    assert parts, "未找到任何前端源文件，检查 frontend/src 是否存在"
+    return "\n".join(parts)
 
 
 def test_docs_use_current_product_language_and_current_interfaces():
@@ -41,8 +56,8 @@ def test_docs_use_current_product_language_and_current_interfaces():
 
 
 def test_optimization_page_has_strategy_specific_grid_templates():
-    content = MAIN_JS.read_text(encoding="utf-8")
-    assert "const OPTIMIZATION_GRID_TEMPLATES" in content
+    store = (FRONTEND_SRC / "store.js").read_text(encoding="utf-8")
+    assert "OPTIMIZATION_GRID_TEMPLATES" in store
     expected = {
         "ma_cross": ["short_window", "long_window"],
         "rsi": ["period", "oversold", "overbought"],
@@ -52,16 +67,19 @@ def test_optimization_page_has_strategy_specific_grid_templates():
         "momentum": ["lookback", "threshold"],
     }
     for strategy_id, params in expected.items():
-        assert f"{strategy_id}: `" in content
+        assert f"{strategy_id}: {{" in store, f"缺少 {strategy_id} 的参数网格模板"
         for param in params:
-            assert f'"{param}"' in content
-    assert "this.optimizationGridTemplates[this.optimizationForm.strategy_id]" in content
+            assert param in store, f"{strategy_id} 模板缺少参数 {param}"
+    # 切换策略时必须重建对应的参数网格
+    assert "OPTIMIZATION_GRID_TEMPLATES[state.optimizationForm.strategy_id]" in store
+    optimization_page = (FRONTEND_SRC / "pages" / "OptimizationPage.vue").read_text(encoding="utf-8")
+    assert "actions.resetOptimizationGrid()" in optimization_page
 
 
 def test_public_package_and_frontend_use_product_positioning():
     package_text = (PROJECT_ROOT / "package.json").read_text(encoding="utf-8")
-    main_js = MAIN_JS.read_text(encoding="utf-8")
+    content = frontend_source()
     assert "quantlab-backtest-platform" in package_text
     assert ("gradu" + "ation") not in package_text
-    assert "产品展示要点" in main_js
-    assert "在线演示数据" in main_js
+    assert "产品展示要点" in content
+    assert "在线演示数据" in content

@@ -72,11 +72,20 @@ FastAPI 接口层
 ## 项目结构
 
 ```text
-backend/   FastAPI 服务、策略库、数据适配器、回测引擎和报告服务
-frontend/  Vue 3 前端应用、研究工作台和可视化界面
-docs/      需求、架构、API、测试、部署和使用说明
-tests/     后端能力、部署配置、文档一致性和前端文案回归测试
+backend/            FastAPI 服务、策略库、数据适配器、回测引擎和报告服务
+frontend/src/
+  styles/           设计变量、基础排版与组件样式
+  components/       外壳与通用组件（图表、指标卡、空状态等）
+  pages/            首页与六个工作台页面
+  store.js          应用状态与业务动作
+  api.js            请求封装、错误解析与演示兜底
+  charts.js         ECharts 按需引入与统一图表配置
+  format.js         百分比、金额、日期等统一格式化
+docs/               需求、架构、API、测试、部署、UI 设计说明
+tests/              后端能力、部署配置、文档一致性和前端回归测试
 ```
+
+界面设计规范（配色语义、信息密度、组件与逐页面结构）见 [`docs/09-UI重设计方案.md`](docs/09-UI重设计方案.md)。
 
 ## 线上部署
 
